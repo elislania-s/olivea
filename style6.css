@@ -1,0 +1,1158 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+
+    overflow-x: hidden;
+}
+
+body {
+    background-color: #F6F0E5;
+    color: #3F3026;
+}
+
+
+/* ================================
+   HEADER
+================================ */
+
+.site-header {
+    width: 100%;
+    height: auto;
+    background-color: #F6F0E5;
+
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.header-inner {
+    width: 100%;
+    min-height: 150px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    position: relative;
+
+    padding: 18px 60px 20px;
+}
+
+
+/* ================================
+   LOGO
+================================ */
+
+.brand {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+
+    text-decoration: none;
+
+    font-family: "Cormorant Garamond", serif;
+    font-size: 64px;
+    font-weight: 600;
+    line-height: 1;
+
+    color: #3F3026;
+}
+
+.brand-letter {
+    color: #3F3026;
+}
+
+.brand-e {
+    color: #71806C;
+}
+
+
+/* ================================
+   BORBOLETA VOANDO SOBRE O NOME
+   "OLIVEA"
+
+   Usa uma IMAGEM de verdade
+   (borboleta.png — troque pelo
+   arquivo real que você baixar/
+   licenciar) em vez de desenho
+   feito à mão, pra ficar realista.
+
+   Fica por cima das letras, voa
+   atravessando o nome com leve
+   sobe-e-desce, bate a asa
+   continuamente (efeito simulado
+   comprimindo a imagem no eixo X),
+   e some no fim do voo — repetindo
+   de tempos em tempos, não só ao
+   carregar a página.
+
+   O voo usa "left/top" em % (não
+   "transform"), porque porcentagem
+   em left/top é relativa ao
+   tamanho do elemento pai (a
+   logo inteira) — assim funciona
+   proporcionalmente em qualquer
+   tamanho de tela, sem precisar
+   ajustar valores por breakpoint.
+================================ */
+
+.brand-butterfly-wrap {
+    position: absolute;
+    inset: 0;
+
+    overflow: visible;
+    pointer-events: none;
+
+    z-index: 2;
+}
+
+.brand-butterfly {
+    position: absolute;
+
+    width: 46px;
+    height: auto;
+
+    top: 55%;
+    left: -10%;
+
+    opacity: 0;
+
+    animation: butterfly-fly 15s ease-in-out infinite;
+}
+
+@keyframes butterfly-fly {
+    0% {
+        left: -10%;
+        top: 60%;
+        opacity: 0;
+        transform: rotate(-6deg) scale(0.75);
+    }
+    6% {
+        opacity: 1;
+    }
+    25% {
+        left: 20%;
+        top: 15%;
+        transform: rotate(5deg) scale(0.95);
+    }
+    50% {
+        left: 55%;
+        top: 45%;
+        transform: rotate(-5deg) scale(1.05);
+    }
+    72% {
+        left: 100%;
+        top: 10%;
+        opacity: 1;
+        transform: rotate(4deg) scale(0.9);
+    }
+    80% {
+        opacity: 0;
+    }
+    100% {
+        left: 100%;
+        top: 10%;
+        opacity: 0;
+    }
+}
+
+/* Simula o bater de asa comprimindo a imagem
+   no eixo horizontal, rápido e contínuo */
+
+.butterfly-flap {
+    display: block;
+
+    transform-origin: center;
+
+    animation: wing-flap 0.24s ease-in-out infinite alternate;
+}
+
+.butterfly-flap img {
+    width: 100%;
+    height: auto;
+
+    display: block;
+}
+
+@keyframes wing-flap {
+    0% {
+        transform: scaleX(1);
+    }
+    100% {
+        transform: scaleX(0.72);
+    }
+}
+
+
+/* Ícone um pouco menor em telas
+   menores, acompanhando a logo */
+
+@media (max-width: 900px) {
+    .brand-butterfly {
+        width: 32px;
+    }
+}
+
+@media (max-width: 480px) {
+    .brand-butterfly {
+        width: 26px;
+    }
+}
+
+
+/* ================================
+   MENU
+================================ */
+
+.main-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 36px;
+
+    margin-top: 18px;
+}
+
+.main-nav a {
+    position: relative;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+
+    color: #3F3026;
+
+    text-decoration: none;
+
+    white-space: nowrap;
+}
+
+.main-nav a::after {
+    content: "";
+
+    position: absolute;
+    left: 0;
+    bottom: -4px;
+
+    width: 100%;
+    height: 1px;
+
+    background-color: currentColor;
+
+    transform: scaleX(0);
+    transform-origin: left;
+
+    transition: transform 0.3s ease;
+}
+
+.main-nav a:hover::after,
+.main-nav a:focus-visible::after {
+    transform: scaleX(1);
+}
+
+
+/* ================================
+   SACOLA
+================================ */
+
+.bag-link {
+    position: absolute;
+
+    right: 60px;
+    top: 50%;
+
+    transform: translateY(-50%);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bag-link img {
+    width: 50px;
+    height: 46px;
+
+    object-fit: contain;
+    display: block;
+}
+
+
+/* ================================
+   HEADER — RESPONSIVIDADE
+   (mesmos valores usados na página
+   de coleção — IMPORTANTE: estes
+   blocos precisam vir DEPOIS das
+   regras base acima, senão a
+   cascata do CSS ignora o ajuste
+   mobile)
+================================ */
+
+@media (max-width: 900px) {
+
+    .header-inner {
+        min-height: 120px;
+
+        padding: 16px 20px 18px;
+    }
+
+    .brand {
+        font-size: 46px;
+    }
+
+    .main-nav {
+        gap: 18px;
+
+        margin-top: 12px;
+
+        overflow-x: auto;
+
+        max-width: calc(100% - 50px);
+
+        scrollbar-width: none;
+    }
+
+    .main-nav::-webkit-scrollbar {
+        display: none;
+    }
+
+    .main-nav a {
+        font-size: 11px;
+    }
+
+    .bag-link {
+        right: 20px;
+    }
+
+    .bag-link img {
+        width: 40px;
+        height: 37px;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .header-inner {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+    .brand {
+        font-size: 40px;
+    }
+
+    .main-nav {
+        gap: 14px;
+    }
+
+    .main-nav a {
+        font-size: 9px;
+    }
+
+    .bag-link {
+        right: 14px;
+    }
+
+    .bag-link img {
+        width: 36px;
+        height: 33px;
+    }
+}
+
+
+/* ================================
+   HERO / BANNER
+================================ */
+
+.hero-banner {
+    width: 100%;
+    height: 550px;
+
+    position: relative;
+
+    overflow: hidden;
+
+    /* Verde preenche todo o espaço ao redor da imagem */
+    background-color: #69765C;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hero-banner-image {
+    /* A imagem fica maior e mantém sua qualidade/proporção */
+    width: auto;
+    height: 500px;
+
+    object-fit: contain;
+    object-position: center;
+
+    display: block;
+}
+
+
+
+/* ================================
+   SOBRE / INSPIRAÇÃO
+================================ */
+
+.inspiration-section {
+    width: 100%;
+    min-height: 310px;
+
+    background-color: #F6F0E5;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+
+    text-align: center;
+
+    padding: 50px 20px 70px;
+}
+
+.inspiration-label {
+    font-family: "Montserrat", sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1;
+
+    color: #3F3026;
+    opacity: 0.6;
+
+    margin-bottom: 22px;
+}
+
+.inspiration-section h2 {
+    margin: 0 0 18px;
+
+    font-family: "Cormorant Garamond", serif;
+    font-size: 64px;
+    font-weight: 600;
+    line-height: 1;
+
+    color: #6B452C;
+}
+
+.inspiration-section p {
+    margin: 0;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 1.3;
+
+    color: #3F3026;
+}
+
+
+/* ================================
+   BENEFÍCIOS
+================================ */
+
+.benefits-section {
+    width: 100%;
+
+    background-color: #F6F0E5;
+
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+
+    column-gap: 55px;
+
+    padding: 90px 45px 100px;
+}
+
+
+/* ================================
+   ITEM
+================================ */
+
+.benefit-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+
+    min-width: 0;
+}
+
+
+/* ================================
+   IMAGEM / ÍCONE
+
+   Tamanho uniforme para todos os
+   ícones (altura fixa, largura
+   automática) para não estourar
+   por cima do título/texto.
+================================ */
+
+.benefit-icon {
+    width: 100%;
+    height: 260px;
+
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-start;
+
+    margin-bottom: 6px;
+}
+
+.benefit-icon img {
+    width: auto;
+    height: 260px;
+
+    object-fit: contain;
+
+    display: block;
+}
+
+
+/* ================================
+   TÍTULO
+================================ */
+
+.benefit-item h3 {
+    margin: 0 0 20px;
+
+    font-family: "Cormorant Garamond", serif;
+    font-size: 28px;
+    font-weight: 500;
+    line-height: 1;
+
+    color: #6B452C;
+}
+
+
+/* ================================
+   DESCRIÇÃO
+================================ */
+
+.benefit-item p {
+    max-width: 290px;
+
+    margin: 0;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 1.35;
+
+    color: #3F3026;
+}
+
+
+/* ================================
+   TELAS MENORES
+================================ */
+
+@media (max-width: 900px) {
+
+    .inspiration-section {
+        min-height: auto;
+        padding: 45px 20px 60px;
+    }
+
+    .inspiration-label {
+        font-size: 14px;
+        margin-bottom: 18px;
+    }
+
+    .inspiration-section h2 {
+        font-size: 48px;
+        margin-bottom: 16px;
+    }
+
+    .inspiration-section p {
+        font-size: 16px;
+        line-height: 1.45;
+    }
+
+    .benefits-section {
+        grid-template-columns: repeat(2, 1fr);
+
+        column-gap: 35px;
+        row-gap: 70px;
+
+        padding: 70px 30px 80px;
+    }
+
+    .benefit-icon {
+        height: 175px;
+        margin-bottom: 6px;
+    }
+
+    .benefit-icon img {
+        height: 175px;
+    }
+
+    .benefit-item h3 {
+        font-size: 24px;
+        margin-bottom: 15px;
+    }
+
+    .benefit-item p {
+        font-size: 15px;
+        line-height: 1.45;
+    }
+}
+
+
+/* ================================
+   CELULAR
+================================ */
+
+@media (max-width: 480px) {
+
+    .inspiration-section {
+        padding: 40px 18px 55px;
+    }
+
+    .inspiration-label {
+        font-size: 12px;
+        margin-bottom: 16px;
+    }
+
+    .inspiration-section h2 {
+        font-size: 38px;
+    }
+
+    .inspiration-section p {
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    .inspiration-section p br {
+        display: none;
+    }
+
+    .benefits-section {
+        grid-template-columns: 1fr 1fr;
+
+        column-gap: 20px;
+        row-gap: 55px;
+
+        padding: 55px 20px 65px;
+    }
+
+    .benefit-icon {
+        height: 115px;
+        margin-bottom: 6px;
+    }
+
+    .benefit-icon img {
+        height: 115px;
+    }
+
+    .benefit-item h3 {
+        font-size: 21px;
+    }
+
+    .benefit-item p {
+        font-size: 13px;
+        line-height: 1.4;
+    }
+}
+
+
+/* ================================
+   FOOTER
+================================ */
+
+.site-footer {
+    width: 100%;
+
+    background-color: #71806C;
+
+    position: relative;
+
+    padding: 80px 0 40px;
+}
+
+
+/* ================================
+   CONTEÚDO
+
+   3 colunas x 2 linhas:
+
+   [ LOGO ] [ INFORMAÇÃO ] [ CONTATO        ]
+   [ LOGO ] [ CATEGORIAS ] [ ME MANDE UM OI ]
+
+   A logo (footer-brand) ocupa a 1ª coluna
+   inteira (as duas linhas) e fica centralizada
+   verticalmente. Cada bloco é posicionado na
+   célula certa via grid-column/grid-row, sem
+   precisar mudar a ordem no HTML.
+================================ */
+
+.footer-content {
+    width: 100%;
+
+    padding: 0 7%;
+
+    display: grid;
+
+    grid-template-columns:
+        1.15fr
+        1.1fr
+        1.3fr;
+
+    grid-template-rows: auto auto;
+
+    column-gap: 80px;
+    row-gap: 30px;
+
+    align-items: start;
+}
+
+
+/* LOGO — coluna 1, nas duas linhas, centralizada verticalmente */
+
+.footer-content > .footer-brand {
+    grid-column: 1;
+    grid-row: 1 / 3;
+
+    align-self: center;
+}
+
+
+/* INFORMAÇÃO — coluna 2, linha 1 */
+
+.footer-content > .footer-column:nth-child(2) {
+    grid-column: 2;
+    grid-row: 1;
+}
+
+
+/* CONTATO — coluna 3, linha 1 */
+
+.footer-content > .footer-column:nth-child(3) {
+    grid-column: 3;
+    grid-row: 1;
+}
+
+
+/* CATEGORIAS — coluna 2, linha 2 (embaixo de INFORMAÇÃO) */
+
+.footer-content > .footer-column:nth-child(4) {
+    grid-column: 2;
+    grid-row: 2;
+}
+
+
+/* ME MANDE UM OI — coluna 3, linha 2 (embaixo de CONTATO) */
+
+.footer-content > .footer-contact {
+    grid-column: 3;
+    grid-row: 2;
+}
+
+
+/* ================================
+   LOGO
+================================ */
+
+.footer-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    text-align: center;
+}
+
+
+.footer-logo {
+    display: flex;
+    align-items: center;
+
+    font-family: "Cormorant Garamond", serif;
+    font-size: 64px;
+    font-weight: 600;
+    line-height: 1;
+
+    color: #3F3026;
+}
+
+
+.footer-logo-e {
+    color: #FCFAF6;
+}
+
+
+/* ================================
+   SUBTÍTULO DA LOGO
+================================ */
+
+.footer-subtitle {
+    margin-top: 12px;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 20px;
+    font-weight: 400;
+
+    color: #3F3026;
+
+    white-space: nowrap;
+}
+
+
+/* ================================
+   INSTAGRAM
+================================ */
+
+.footer-instagram {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-top: -50px;
+}
+
+
+.footer-instagram img {
+    width: 220px;
+    height: 220px;
+
+    object-fit: contain;
+
+    display: block;
+}
+
+
+/* ================================
+   COLUNAS
+================================ */
+
+.footer-column {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+
+.footer-column h3 {
+    margin: 0 0 15px;
+
+    font-family: "Cormorant Garamond", serif;
+    font-size: 28px;
+    font-weight: 600;
+    line-height: 1;
+
+    color: #FCFAF6;
+}
+
+
+.footer-column p {
+    margin: 0;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 1.4;
+
+    color: #FCFAF6;
+}
+
+
+/* ================================
+   LINKS DO FOOTER (Informação e
+   Categorias) — são clicáveis,
+   por isso ganham sublinhado sutil
+================================ */
+
+.footer-link {
+    font-family: "Montserrat", sans-serif;
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 1.4;
+
+    color: #FCFAF6;
+
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+
+    transition: color 0.3s ease;
+}
+
+.footer-link:hover {
+    color: #E3A9BC;
+}
+
+
+/* ================================
+   ME MANDE UM OI
+================================ */
+
+.footer-contact h3 {
+    margin-bottom: 15px;
+}
+
+
+.footer-contact p {
+    max-width: 310px;
+
+    margin-bottom: 18px;
+}
+
+
+/* ================================
+   BOTÃO
+================================ */
+
+.footer-button {
+    width: 100%;
+    max-width: 310px;
+
+    min-height: 45px;
+
+    display: flex;
+    align-items: center;
+
+    padding: 0 12px;
+
+    border: 3px solid #3F3026;
+
+    background: transparent;
+
+    text-decoration: none;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+
+    color: #3F3026;
+
+    transition:
+        background-color 0.3s ease,
+        color 0.3s ease;
+}
+
+
+.footer-button:hover {
+    background-color: #3F3026;
+    color: #FCFAF6;
+}
+
+
+/* ================================
+   COPYRIGHT
+================================ */
+
+.footer-copyright {
+    width: 100%;
+
+    margin-top: 60px;
+
+    text-align: center;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 20px;
+    font-weight: 400;
+
+    color: #3F3026;
+}
+
+
+/* ================================
+   TABLET
+
+   Nas telas menores voltamos ao
+   fluxo natural (grid-column/row
+   automático), já que o grid de
+   3 colunas x 2 linhas só faz
+   sentido no desktop.
+================================ */
+
+@media (max-width: 1000px) {
+
+    .site-footer {
+        padding: 70px 0 40px;
+    }
+
+    .footer-content {
+        padding: 0 40px;
+
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: auto auto auto;
+
+        row-gap: 50px;
+        column-gap: 40px;
+    }
+
+    /* LOGO — linha inteira, em cima */
+    .footer-content > .footer-brand {
+        grid-column: 1 / 3;
+        grid-row: 1;
+
+        align-self: start;
+    }
+
+    /* INFORMAÇÃO — coluna 1, linha 2 */
+    .footer-content > .footer-column:nth-child(2) {
+        grid-column: 1;
+        grid-row: 2;
+
+        align-self: start;
+    }
+
+    /* CONTATO — coluna 2, linha 2 */
+    .footer-content > .footer-column:nth-child(3) {
+        grid-column: 2;
+        grid-row: 2;
+
+        align-self: start;
+    }
+
+    /* CATEGORIAS — coluna 1, linha 3 */
+    .footer-content > .footer-column:nth-child(4) {
+        grid-column: 1;
+        grid-row: 3;
+
+        align-self: start;
+    }
+
+    /* ME MANDE UM OI — coluna 2, linha 3 */
+    .footer-content > .footer-contact {
+        grid-column: 2;
+        grid-row: 3;
+
+        align-self: start;
+    }
+
+    .footer-column h3 {
+        font-size: 24px;
+    }
+
+    .footer-column p,
+    .footer-link {
+        font-size: 16px;
+    }
+
+    .footer-copyright {
+        margin-top: 80px;
+        font-size: 15px;
+    }
+}
+
+
+/* ================================
+   CELULAR
+================================ */
+
+@media (max-width: 600px) {
+
+    .site-footer {
+        padding: 55px 0 30px;
+    }
+
+
+    .footer-content {
+        padding: 0 25px;
+
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto auto;
+
+        column-gap: 20px;
+        row-gap: 35px;
+    }
+
+    /* LOGO — linha inteira, em cima */
+    .footer-content > .footer-brand {
+        grid-column: 1 / 3;
+        grid-row: 1;
+    }
+
+    /* INFORMAÇÃO — coluna 1, linha 2 */
+    .footer-content > .footer-column:nth-child(2) {
+        grid-column: 1;
+        grid-row: 2;
+    }
+
+    /* CONTATO — coluna 2, linha 2 */
+    .footer-content > .footer-column:nth-child(3) {
+        grid-column: 2;
+        grid-row: 2;
+    }
+
+    /* CATEGORIAS — coluna 1, linha 3 */
+    .footer-content > .footer-column:nth-child(4) {
+        grid-column: 1;
+        grid-row: 3;
+    }
+
+    /* ME MANDE UM OI — coluna 2, linha 3 */
+    .footer-content > .footer-contact {
+        grid-column: 2;
+        grid-row: 3;
+    }
+
+
+    .footer-brand {
+        align-items: center;
+
+        text-align: center;
+    }
+
+
+    .footer-logo {
+        font-size: 48px;
+    }
+
+
+    .footer-subtitle {
+        font-size: 14px;
+
+        white-space: normal;
+    }
+
+
+    .footer-instagram {
+        justify-content: center;
+    }
+
+
+    .footer-instagram img {
+        width: 170px;
+        height: 170px;
+    }
+
+
+    .footer-column h3 {
+        font-size: 24px;
+
+        margin-bottom: 12px;
+    }
+
+
+    .footer-column p,
+    .footer-link {
+        font-size: 14px;
+
+        line-height: 1.45;
+    }
+
+
+    .footer-button {
+        max-width: 100%;
+
+        min-height: 42px;
+
+        font-size: 16px;
+    }
+
+
+    .footer-copyright {
+        margin-top: 65px;
+
+        font-size: 13px;
+    }
+}

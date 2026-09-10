@@ -1,0 +1,1500 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+
+    overflow-x: hidden;
+}
+
+body {
+    background-color: #F6F0E5;
+    color: #3F3026;
+}
+
+
+/* ================================
+   HEADER
+================================ */
+
+.site-header {
+    width: 100%;
+    height: auto;
+    background-color: #F6F0E5;
+
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.header-inner {
+    width: 100%;
+    min-height: 150px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    position: relative;
+
+    padding: 18px 60px 20px;
+}
+
+
+/* ================================
+   LOGO
+================================ */
+
+.brand {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+
+    text-decoration: none;
+
+    font-family: "Cormorant Garamond", serif;
+    font-size: 64px;
+    font-weight: 600;
+    line-height: 1;
+
+    color: #3F3026;
+}
+
+.brand-letter {
+    color: #3F3026;
+}
+
+.brand-e {
+    color: #71806C;
+}
+
+
+/* ================================
+   BORBOLETA VOANDO SOBRE O NOME
+   "OLIVEA"
+================================ */
+
+.brand-butterfly-wrap {
+    position: absolute;
+    inset: 0;
+
+    overflow: visible;
+    pointer-events: none;
+
+    z-index: 2;
+}
+
+.brand-butterfly {
+    position: absolute;
+
+    width: 46px;
+    height: auto;
+
+    top: 55%;
+    left: -10%;
+
+    opacity: 0;
+
+    animation: butterfly-fly 15s ease-in-out infinite;
+}
+
+@keyframes butterfly-fly {
+    0% {
+        left: -10%;
+        top: 60%;
+        opacity: 0;
+        transform: rotate(-6deg) scale(0.75);
+    }
+    6% {
+        opacity: 1;
+    }
+    25% {
+        left: 20%;
+        top: 15%;
+        transform: rotate(5deg) scale(0.95);
+    }
+    50% {
+        left: 55%;
+        top: 45%;
+        transform: rotate(-5deg) scale(1.05);
+    }
+    72% {
+        left: 100%;
+        top: 10%;
+        opacity: 1;
+        transform: rotate(4deg) scale(0.9);
+    }
+    80% {
+        opacity: 0;
+    }
+    100% {
+        left: 100%;
+        top: 10%;
+        opacity: 0;
+    }
+}
+
+.butterfly-flap {
+    display: block;
+
+    transform-origin: center;
+
+    animation: wing-flap 0.24s ease-in-out infinite alternate;
+}
+
+.butterfly-flap img {
+    width: 100%;
+    height: auto;
+
+    display: block;
+}
+
+@keyframes wing-flap {
+    0% {
+        transform: scaleX(1);
+    }
+    100% {
+        transform: scaleX(0.72);
+    }
+}
+
+@media (max-width: 900px) {
+    .brand-butterfly {
+        width: 32px;
+    }
+}
+
+@media (max-width: 480px) {
+    .brand-butterfly {
+        width: 26px;
+    }
+}
+
+
+/* ================================
+   MENU
+================================ */
+
+.main-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 36px;
+
+    margin-top: 18px;
+}
+
+.main-nav a {
+    position: relative;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+
+    color: #3F3026;
+
+    text-decoration: none;
+
+    white-space: nowrap;
+}
+
+.main-nav a::after {
+    content: "";
+
+    position: absolute;
+    left: 0;
+    bottom: -4px;
+
+    width: 100%;
+    height: 1px;
+
+    background-color: currentColor;
+
+    transform: scaleX(0);
+    transform-origin: left;
+
+    transition: transform 0.3s ease;
+}
+
+.main-nav a:hover::after,
+.main-nav a:focus-visible::after {
+    transform: scaleX(1);
+}
+
+
+/* ================================
+   SACOLA
+================================ */
+
+.bag-link {
+    position: absolute;
+
+    right: 60px;
+    top: 50%;
+
+    transform: translateY(-50%);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bag-link img {
+    width: 50px;
+    height: 46px;
+
+    object-fit: contain;
+    display: block;
+}
+
+
+/* ================================
+   HEADER — RESPONSIVIDADE
+   (mesmos valores da página principal —
+   IMPORTANTE: estes blocos precisam vir
+   DEPOIS das regras base acima, senão a
+   cascata do CSS ignora o ajuste mobile)
+================================ */
+
+@media (max-width: 900px) {
+
+    .header-inner {
+        min-height: 120px;
+
+        padding: 16px 20px 18px;
+    }
+
+    .brand {
+        font-size: 46px;
+    }
+
+    .main-nav {
+        gap: 18px;
+
+        margin-top: 12px;
+
+        overflow-x: auto;
+
+        max-width: calc(100% - 50px);
+
+        scrollbar-width: none;
+    }
+
+    .main-nav::-webkit-scrollbar {
+        display: none;
+    }
+
+    .main-nav a {
+        font-size: 11px;
+    }
+
+    .bag-link {
+        right: 20px;
+    }
+
+    .bag-link img {
+        width: 40px;
+        height: 37px;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .header-inner {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+
+    .brand {
+        font-size: 40px;
+    }
+
+    .main-nav {
+        gap: 14px;
+    }
+
+    .main-nav a {
+        font-size: 9px;
+    }
+
+    .bag-link {
+        right: 14px;
+    }
+
+    .bag-link img {
+        width: 36px;
+        height: 33px;
+    }
+}
+
+
+/* ================================================
+   ================================================
+   HERO DA COLEÇÃO
+   ================================================
+   ================================================ */
+
+.collection-hero {
+    width: 100%;
+
+    padding: 40px 60px 30px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    background-color: #F6F0E5;
+}
+
+
+/* ================================
+   VOLTAR
+
+   Montserrat Medium 16, #3F3026 a 60%
+================================ */
+
+.collection-back {
+    align-self: flex-start;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+
+    color: rgba(63, 48, 38, 0.6);
+
+    text-decoration: none;
+
+    transition: color 0.3s ease;
+}
+
+.collection-back:hover {
+    color: #3F3026;
+}
+
+
+/* ================================
+   TÍTULO / DESCRIÇÃO
+================================ */
+
+.collection-heading {
+    width: 100%;
+    max-width: 720px;
+
+    margin-top: 6px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    text-align: center;
+}
+
+/* COLEÇÃO — mesma config do Voltar */
+.collection-label {
+    font-family: "Montserrat", sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+
+    color: rgba(63, 48, 38, 0.6);
+
+    letter-spacing: 0.02em;
+}
+
+/* Navegação — Cormorant Garamond SemiBold 48, #6B452C */
+.collection-title {
+    margin: 8px 0 18px;
+
+    font-family: "Cormorant Garamond", serif;
+    font-size: 48px;
+    font-weight: 600;
+    line-height: 1;
+
+    color: #6B452C;
+}
+
+/* Descrição — Montserrat Regular 20, #3F3026 */
+.collection-description {
+    max-width: 620px;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 1.5;
+
+    color: #3F3026;
+}
+
+
+/* ================================
+   FILTRO / CLASSIFICAR POR
+
+   Mesma config do Voltar/Coleção
+================================ */
+
+.collection-controls {
+    width: 100%;
+    max-width: 1400px;
+
+    margin-top: 55px;
+
+    padding-top: 22px;
+    border-top: 1px solid rgba(63, 48, 38, 0.15);
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.control-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    background: none;
+    border: none;
+
+    cursor: pointer;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+
+    color: rgba(63, 48, 38, 0.6);
+
+    transition: color 0.3s ease;
+}
+
+.control-btn:hover,
+.control-btn[aria-expanded="true"] {
+    color: #3F3026;
+}
+
+.control-icon {
+    color: rgba(63, 48, 38, 0.6);
+}
+
+.control-btn:hover .control-icon,
+.control-btn[aria-expanded="true"] .control-icon {
+    color: #3F3026;
+}
+
+
+/* ================================================
+   CLASSIFICAR POR — "telinha" (dropdown pequeno)
+================================================ */
+
+.sort-wrapper {
+    position: relative;
+}
+
+.sort-panel {
+    position: absolute;
+    top: calc(100% + 14px);
+    right: 0;
+
+    min-width: 220px;
+
+    background-color: #FCFAF6;
+    border: 1px solid rgba(63, 48, 38, 0.15);
+
+    box-shadow: 0 12px 30px rgba(63, 48, 38, 0.12);
+
+    display: flex;
+    flex-direction: column;
+
+    padding: 8px 0;
+
+    z-index: 20;
+}
+
+.sort-panel[hidden] {
+    display: none;
+}
+
+.sort-option {
+    background: none;
+    border: none;
+
+    text-align: left;
+
+    padding: 12px 20px;
+
+    cursor: pointer;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+
+    color: #3F3026;
+
+    transition: background-color 0.2s ease;
+}
+
+.sort-option:hover,
+.sort-option.active {
+    background-color: #F6F0E5;
+}
+
+
+/* ================================================
+   FILTRO — painel estilo "sanduíche"
+   (desliza da lateral direita, com overlay)
+================================================ */
+
+.filter-overlay {
+    position: fixed;
+    inset: 0;
+
+    background-color: rgba(63, 48, 38, 0.35);
+
+    z-index: 1900;
+
+    opacity: 0;
+    visibility: hidden;
+
+    transition:
+        opacity 0.3s ease,
+        visibility 0.3s ease;
+}
+
+.filter-overlay.is-open {
+    opacity: 1;
+    visibility: visible;
+}
+
+.filter-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+
+    width: min(360px, 100%);
+    height: 100%;
+
+    background-color: #FCFAF6;
+
+    padding: 30px 30px 40px;
+
+    display: flex;
+    flex-direction: column;
+
+    z-index: 2000;
+
+    transform: translateX(100%);
+
+    transition: transform 0.35s ease;
+}
+
+.filter-panel.is-open {
+    transform: translateX(0);
+}
+
+.filter-panel-header {
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 30px;
+}
+
+.filter-panel-header h2 {
+    font-family: "Montserrat", sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+
+    color: #3F3026;
+
+    letter-spacing: 0.05em;
+}
+
+.filter-close {
+    background: none;
+    border: none;
+
+    font-size: 20px;
+
+    color: #3F3026;
+
+    cursor: pointer;
+
+    line-height: 1;
+}
+
+.filter-panel-body {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+
+    margin-bottom: 40px;
+}
+
+.filter-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+
+    color: #3F3026;
+
+    cursor: pointer;
+}
+
+.filter-option input {
+    width: 18px;
+    height: 18px;
+
+    accent-color: #3F3026;
+
+    cursor: pointer;
+}
+
+.filter-apply {
+    width: 100%;
+    min-height: 45px;
+
+    background-color: #3F3026;
+    border: 2px solid #3F3026;
+
+    color: #FCFAF6;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    margin-bottom: 14px;
+
+    transition:
+        background-color 0.3s ease,
+        color 0.3s ease;
+}
+
+.filter-apply:hover {
+    background-color: transparent;
+    color: #3F3026;
+}
+
+.filter-clear {
+    width: 100%;
+
+    background: none;
+    border: none;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+
+    color: rgba(63, 48, 38, 0.6);
+
+    text-decoration: underline;
+
+    cursor: pointer;
+}
+
+.filter-clear:hover {
+    color: #3F3026;
+}
+
+
+/* ================================================
+   GRID DE PRODUTOS
+================================================ */
+
+.collection-products {
+    width: 100%;
+
+    padding: 50px 60px 90px;
+
+    background-color: #F6F0E5;
+}
+
+.collection-grid {
+    width: 100%;
+
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+
+    gap: 0;
+
+    border-top: 1px solid rgba(63, 48, 38, 0.15);
+    border-left: 1px solid rgba(63, 48, 38, 0.15);
+}
+
+.collection-grid .product-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    text-align: center;
+
+    padding: 40px;
+
+    border-right: 1px solid rgba(63, 48, 38, 0.15);
+    border-bottom: 1px solid rgba(63, 48, 38, 0.15);
+}
+
+.collection-grid .product-card.is-hidden {
+    display: none;
+}
+
+
+/* Caixa da imagem + pontinhos (mesma dinâmica dos Destaques) */
+
+.collection-grid .product-image-box {
+    width: 100%;
+    max-width: 480px;
+
+    aspect-ratio: 480 / 477;
+
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background-color: transparent;
+
+    overflow: hidden;
+
+    margin-bottom: 13px;
+}
+
+.collection-grid .product-image {
+    width: 68%;
+    height: 81%;
+
+    object-fit: contain;
+
+    display: block;
+
+    transition: opacity 0.25s ease;
+}
+
+.collection-grid .product-dots {
+    position: absolute;
+
+    bottom: 20px;
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    display: flex;
+    align-items: center;
+
+    gap: 5px;
+}
+
+.collection-grid .dot {
+    width: 7px;
+    height: 7px;
+
+    padding: 0;
+
+    border: none;
+    border-radius: 50%;
+
+    background-color: #BDB8B0;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.collection-grid .dot.active {
+    background-color: #3F3026;
+
+    transform: scale(1.05);
+}
+
+
+/* Título — Cormorant Garamond Medium 24, #6B452C */
+
+.collection-grid h3 {
+    margin: 0 0 9px;
+
+    font-family: "Cormorant Garamond", serif;
+    font-size: 24px;
+    font-weight: 500;
+    line-height: 1.1;
+
+    color: #6B452C;
+}
+
+
+/* Preço — Montserrat SemiBold 20, #3F3026 */
+
+.collection-grid .product-price {
+    margin: 0 0 16px;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1;
+
+    color: #3F3026;
+}
+
+
+/* Comprar — Montserrat SemiBold 20, #3F3026,
+   152x40, borda 2px #3F3026 */
+
+.buy-button {
+    width: 152px;
+    height: 40px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 2px solid #3F3026;
+    background: transparent;
+
+    text-decoration: none;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+
+    color: #3F3026;
+
+    transition:
+        background-color 0.3s ease,
+        color 0.3s ease;
+}
+
+.buy-button:hover {
+    background-color: #3F3026;
+    color: #FCFAF6;
+}
+
+
+/* ================================
+   VER MAIS — igual à landing principal
+================================ */
+
+.see-more {
+    display: block;
+
+    width: fit-content;
+
+    margin: 48px auto 0;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 24px;
+    font-weight: 600;
+
+    color: #3F3026;
+
+    text-decoration: none;
+
+    transition: opacity 0.3s ease;
+}
+
+.see-more:hover,
+.see-more:focus-visible,
+.see-more:active,
+.see-more.was-clicked {
+    text-decoration: underline;
+}
+
+
+/* ================================================
+   RESPONSIVIDADE
+================================================ */
+
+@media (max-width: 1100px) {
+
+    .collection-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 900px) {
+
+    .collection-hero {
+        padding: 30px 25px 25px;
+    }
+
+    .collection-title {
+        font-size: 38px;
+    }
+
+    .collection-description {
+        font-size: 16px;
+    }
+
+    .collection-controls {
+        margin-top: 35px;
+    }
+
+    .collection-products {
+        padding: 35px 25px 65px;
+    }
+}
+
+@media (max-width: 600px) {
+
+    .collection-title {
+        font-size: 32px;
+    }
+
+    /* Abaixo de 600px o grid mantém as linhas divisórias
+       (mesmo estilo do tablet, só reduz o padding interno
+       pra caber melhor em telas pequenas) */
+
+    .collection-grid .product-card {
+        padding: 20px;
+    }
+
+    .collection-grid .product-image-box {
+        margin-bottom: 9px;
+    }
+
+    .collection-grid h3 {
+        font-size: 20px;
+
+        margin-bottom: 6px;
+    }
+
+    .collection-grid .product-price {
+        font-size: 15px;
+
+        margin-bottom: 10px;
+    }
+
+    .buy-button {
+        width: 100%;
+        max-width: 152px;
+
+        height: 36px;
+
+        font-size: 15px;
+    }
+}
+
+
+/* ================================
+   BENEFÍCIOS
+================================ */
+
+.benefits-section {
+    width: 100%;
+
+    background-color: #F6F0E5;
+
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+
+    column-gap: 55px;
+
+    padding: 90px 45px 100px;
+}
+
+.benefit-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+
+    min-width: 0;
+}
+
+.benefit-icon {
+    width: 100%;
+    height: 260px;
+
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-start;
+
+    margin-bottom: 6px;
+}
+
+.benefit-icon img {
+    width: auto;
+    height: 260px;
+
+    object-fit: contain;
+
+    display: block;
+}
+
+.benefit-item h3 {
+    margin: 0 0 20px;
+
+    font-family: "Cormorant Garamond", serif;
+    font-size: 28px;
+    font-weight: 500;
+    line-height: 1;
+
+    color: #6B452C;
+}
+
+.benefit-item p {
+    max-width: 290px;
+
+    margin: 0;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 1.35;
+
+    color: #3F3026;
+}
+
+@media (max-width: 900px) {
+
+    .benefits-section {
+        grid-template-columns: repeat(2, 1fr);
+
+        column-gap: 35px;
+        row-gap: 70px;
+
+        padding: 70px 30px 80px;
+    }
+
+    .benefit-icon {
+        height: 175px;
+        margin-bottom: 6px;
+    }
+
+    .benefit-icon img {
+        height: 175px;
+    }
+
+    .benefit-item h3 {
+        font-size: 24px;
+        margin-bottom: 15px;
+    }
+
+    .benefit-item p {
+        font-size: 15px;
+        line-height: 1.45;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .benefits-section {
+        grid-template-columns: 1fr 1fr;
+
+        column-gap: 20px;
+        row-gap: 55px;
+
+        padding: 55px 20px 65px;
+    }
+
+    .benefit-icon {
+        height: 115px;
+        margin-bottom: 6px;
+    }
+
+    .benefit-icon img {
+        height: 115px;
+    }
+
+    .benefit-item h3 {
+        font-size: 21px;
+    }
+
+    .benefit-item p {
+        font-size: 13px;
+        line-height: 1.4;
+    }
+}
+
+
+/* ================================
+   FOOTER
+================================ */
+
+.site-footer {
+    width: 100%;
+
+    background-color: #71806C;
+
+    position: relative;
+
+    padding: 80px 0 40px;
+}
+
+.footer-content {
+    width: 100%;
+
+    padding: 0 7%;
+
+    display: grid;
+
+    grid-template-columns:
+        1.15fr
+        1.1fr
+        1.3fr;
+
+    grid-template-rows: auto auto;
+
+    column-gap: 80px;
+    row-gap: 30px;
+
+    align-items: start;
+}
+
+.footer-content > .footer-brand {
+    grid-column: 1;
+    grid-row: 1 / 3;
+
+    align-self: center;
+}
+
+.footer-content > .footer-column:nth-child(2) {
+    grid-column: 2;
+    grid-row: 1;
+}
+
+.footer-content > .footer-column:nth-child(3) {
+    grid-column: 3;
+    grid-row: 1;
+}
+
+.footer-content > .footer-column:nth-child(4) {
+    grid-column: 2;
+    grid-row: 2;
+}
+
+.footer-content > .footer-contact {
+    grid-column: 3;
+    grid-row: 2;
+}
+
+.footer-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    text-align: center;
+}
+
+.footer-logo {
+    display: flex;
+    align-items: center;
+
+    font-family: "Cormorant Garamond", serif;
+    font-size: 64px;
+    font-weight: 600;
+    line-height: 1;
+
+    color: #3F3026;
+}
+
+.footer-logo-e {
+    color: #FCFAF6;
+}
+
+.footer-subtitle {
+    margin-top: 12px;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 20px;
+    font-weight: 400;
+
+    color: #3F3026;
+
+    white-space: nowrap;
+}
+
+.footer-instagram {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-top: -50px;
+}
+
+.footer-instagram img {
+    width: 220px;
+    height: 220px;
+
+    object-fit: contain;
+
+    display: block;
+}
+
+.footer-column {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.footer-column h3 {
+    margin: 0 0 15px;
+
+    font-family: "Cormorant Garamond", serif;
+    font-size: 28px;
+    font-weight: 600;
+    line-height: 1;
+
+    color: #FCFAF6;
+}
+
+.footer-column p {
+    margin: 0;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 1.4;
+
+    color: #FCFAF6;
+}
+
+.footer-link {
+    font-family: "Montserrat", sans-serif;
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 1.4;
+
+    color: #FCFAF6;
+
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+
+    transition: color 0.3s ease;
+}
+
+.footer-link:hover {
+    color: #E3A9BC;
+}
+
+.footer-contact h3 {
+    margin-bottom: 15px;
+}
+
+.footer-contact p {
+    max-width: 310px;
+
+    margin-bottom: 18px;
+}
+
+.footer-button {
+    width: 100%;
+    max-width: 310px;
+
+    min-height: 45px;
+
+    display: flex;
+    align-items: center;
+
+    padding: 0 12px;
+
+    border: 3px solid #3F3026;
+
+    background: transparent;
+
+    text-decoration: none;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+
+    color: #3F3026;
+
+    transition:
+        background-color 0.3s ease,
+        color 0.3s ease;
+}
+
+.footer-button:hover {
+    background-color: #3F3026;
+    color: #FCFAF6;
+}
+
+.footer-copyright {
+    width: 100%;
+
+    margin-top: 60px;
+
+    text-align: center;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 20px;
+    font-weight: 400;
+
+    color: #3F3026;
+}
+
+@media (max-width: 1000px) {
+
+    .site-footer {
+        padding: 70px 0 40px;
+    }
+
+    .footer-content {
+        padding: 0 40px;
+
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: auto auto auto;
+
+        row-gap: 50px;
+        column-gap: 40px;
+    }
+
+    .footer-content > .footer-brand {
+        grid-column: 1 / 3;
+        grid-row: 1;
+
+        align-self: start;
+    }
+
+    .footer-content > .footer-column:nth-child(2) {
+        grid-column: 1;
+        grid-row: 2;
+
+        align-self: start;
+    }
+
+    .footer-content > .footer-column:nth-child(3) {
+        grid-column: 2;
+        grid-row: 2;
+
+        align-self: start;
+    }
+
+    .footer-content > .footer-column:nth-child(4) {
+        grid-column: 1;
+        grid-row: 3;
+
+        align-self: start;
+    }
+
+    .footer-content > .footer-contact {
+        grid-column: 2;
+        grid-row: 3;
+
+        align-self: start;
+    }
+
+    .footer-column h3 {
+        font-size: 24px;
+    }
+
+    .footer-column p,
+    .footer-link {
+        font-size: 16px;
+    }
+
+    .footer-copyright {
+        margin-top: 80px;
+        font-size: 15px;
+    }
+}
+
+@media (max-width: 600px) {
+
+    .site-footer {
+        padding: 55px 0 30px;
+    }
+
+    .footer-content {
+        padding: 0 25px;
+
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto auto;
+
+        column-gap: 20px;
+        row-gap: 35px;
+    }
+
+    .footer-content > .footer-brand {
+        grid-column: 1 / 3;
+        grid-row: 1;
+    }
+
+    .footer-content > .footer-column:nth-child(2) {
+        grid-column: 1;
+        grid-row: 2;
+    }
+
+    .footer-content > .footer-column:nth-child(3) {
+        grid-column: 2;
+        grid-row: 2;
+    }
+
+    .footer-content > .footer-column:nth-child(4) {
+        grid-column: 1;
+        grid-row: 3;
+    }
+
+    .footer-content > .footer-contact {
+        grid-column: 2;
+        grid-row: 3;
+    }
+
+    .footer-brand {
+        align-items: center;
+
+        text-align: center;
+    }
+
+    .footer-logo {
+        font-size: 48px;
+    }
+
+    .footer-subtitle {
+        font-size: 14px;
+
+        white-space: normal;
+    }
+
+    .footer-instagram {
+        justify-content: center;
+    }
+
+    .footer-instagram img {
+        width: 170px;
+        height: 170px;
+    }
+
+    .footer-column h3 {
+        font-size: 24px;
+
+        margin-bottom: 12px;
+    }
+
+    .footer-column p,
+    .footer-link {
+        font-size: 14px;
+
+        line-height: 1.45;
+    }
+
+    .footer-button {
+        max-width: 100%;
+
+        min-height: 42px;
+
+        font-size: 16px;
+    }
+
+    .footer-copyright {
+        margin-top: 65px;
+
+        font-size: 13px;
+    }
+}

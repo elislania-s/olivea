@@ -1,0 +1,642 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+}
+
+body {
+    background-color: #F6F0E5;
+    color: #3F3026;
+}
+
+
+/* ================================================
+   HEADER — IDÊNTICO AO RESTO DO SITE
+================================================ */
+
+.site-header {
+    width: 100%;
+    height: auto;
+    background-color: #F6F0E5;
+
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.header-inner {
+    width: 100%;
+    min-height: 150px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    position: relative;
+
+    padding: 18px 60px 20px;
+}
+
+.brand {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+
+    text-decoration: none;
+
+    font-family: "Cormorant Garamond", serif;
+    font-size: 64px;
+    font-weight: 600;
+    line-height: 1;
+
+    color: #3F3026;
+}
+
+.brand-letter { color: #3F3026; }
+.brand-e { color: #71806C; }
+
+.brand-butterfly-wrap {
+    position: absolute;
+    inset: 0;
+    overflow: visible;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.brand-butterfly {
+    position: absolute;
+    width: 46px;
+    height: auto;
+    top: 55%;
+    left: -10%;
+    opacity: 0;
+    animation: butterfly-fly 15s ease-in-out infinite;
+}
+
+@keyframes butterfly-fly {
+    0% { left: -10%; top: 60%; opacity: 0; transform: rotate(-6deg) scale(0.75); }
+    6% { opacity: 1; }
+    25% { left: 20%; top: 15%; transform: rotate(5deg) scale(0.95); }
+    50% { left: 55%; top: 45%; transform: rotate(-5deg) scale(1.05); }
+    72% { left: 100%; top: 10%; opacity: 1; transform: rotate(4deg) scale(0.9); }
+    80% { opacity: 0; }
+    100% { left: 100%; top: 10%; opacity: 0; }
+}
+
+.butterfly-flap {
+    display: block;
+    transform-origin: center;
+    animation: wing-flap 0.24s ease-in-out infinite alternate;
+}
+
+.butterfly-flap img { width: 100%; height: auto; display: block; }
+
+@keyframes wing-flap {
+    0% { transform: scaleX(1); }
+    100% { transform: scaleX(0.72); }
+}
+
+@media (max-width: 900px) { .brand-butterfly { width: 32px; } }
+@media (max-width: 480px) { .brand-butterfly { width: 26px; } }
+
+.main-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 36px;
+    margin-top: 18px;
+}
+
+.main-nav a {
+    position: relative;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+
+    color: #3F3026;
+
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.main-nav a::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -4px;
+    width: 100%;
+    height: 1px;
+    background-color: currentColor;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+}
+
+.main-nav a:hover::after,
+.main-nav a:focus-visible::after { transform: scaleX(1); }
+
+.bag-link {
+    position: absolute;
+    right: 60px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bag-link img { width: 50px; height: 46px; object-fit: contain; display: block; }
+
+@media (max-width: 900px) {
+
+    .header-inner { min-height: 120px; padding: 16px 20px 18px; }
+    .brand { font-size: 46px; }
+
+    .main-nav {
+        gap: 18px;
+        margin-top: 12px;
+        overflow-x: auto;
+        max-width: calc(100% - 50px);
+        scrollbar-width: none;
+    }
+
+    .main-nav::-webkit-scrollbar { display: none; }
+    .main-nav a { font-size: 11px; }
+
+    .bag-link { right: 20px; }
+    .bag-link img { width: 40px; height: 37px; }
+}
+
+@media (max-width: 480px) {
+
+    .header-inner { padding-left: 15px; padding-right: 15px; }
+    .brand { font-size: 40px; }
+    .main-nav { gap: 14px; }
+    .main-nav a { font-size: 9px; }
+    .bag-link { right: 14px; }
+    .bag-link img { width: 36px; height: 33px; }
+}
+
+
+/* ================================================
+   SACOLA (CARRINHO)
+================================================ */
+
+.sacola-secao {
+    width: 100%;
+    max-width: 1100px;
+
+    margin: 0 auto;
+
+    padding: 55px 30px 100px;
+
+    background-color: #F6F0E5;
+}
+
+.sacola-titulo {
+    margin: 0 0 34px;
+
+    font-family: "Cormorant Garamond", serif;
+    font-size: 46px;
+    font-weight: 600;
+
+    color: #6B452C;
+}
+
+.sacola-conteudo {
+    display: flex;
+    align-items: flex-start;
+    gap: 50px;
+}
+
+.sacola-lista {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.sacola-item {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+
+    padding: 22px 0;
+
+    border-bottom: 1px solid rgba(63, 48, 38, 0.15);
+}
+
+.sacola-item-imagem {
+    width: 90px;
+    height: 90px;
+    flex-shrink: 0;
+
+    background-color: #F6F0E5;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    overflow: hidden;
+}
+
+.sacola-item-imagem img {
+    width: 78%;
+    height: 78%;
+    object-fit: contain;
+}
+
+.sacola-item-info { flex: 1; }
+
+.sacola-item-nome {
+    margin: 0 0 6px;
+
+    font-family: "Cormorant Garamond", serif;
+    font-size: 22px;
+    font-weight: 500;
+    color: #6B452C;
+}
+
+.sacola-item-preco {
+    font-family: "Montserrat", sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: #3F3026;
+}
+
+.sacola-item-qtd {
+    display: flex;
+    align-items: center;
+    border: 1px solid #3F3026;
+}
+
+.sacola-item-qtd button {
+    width: 32px;
+    height: 34px;
+    border: none;
+    background: transparent;
+    font-size: 16px;
+    color: #3F3026;
+    cursor: pointer;
+}
+
+.sacola-item-qtd span {
+    width: 30px;
+    text-align: center;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: #3F3026;
+}
+
+.sacola-item-remover {
+    background: none;
+    border: none;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 13px;
+
+    color: rgba(63, 48, 38, 0.6);
+
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.sacola-resumo {
+    width: 340px;
+    flex-shrink: 0;
+
+    background-color: #FCFAF6;
+    border: 1px solid rgba(63, 48, 38, 0.15);
+
+    padding: 28px;
+}
+
+.sacola-resumo h2 {
+    margin: 0 0 20px;
+
+    font-family: "Cormorant Garamond", serif;
+    font-size: 26px;
+    font-weight: 600;
+    color: #6B452C;
+}
+
+.sacola-resumo-linha {
+    display: flex;
+    justify-content: space-between;
+
+    margin-bottom: 12px;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 15px;
+    color: #3F3026;
+}
+
+.sacola-resumo-total {
+    display: flex;
+    justify-content: space-between;
+
+    margin: 18px 0 24px;
+    padding-top: 18px;
+
+    border-top: 1px solid rgba(63, 48, 38, 0.15);
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: #3F3026;
+}
+
+.btn-finalizar-compra {
+    width: 100%;
+    height: 50px;
+
+    border: none;
+    background-color: #3F3026;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+
+    color: #FCFAF6;
+
+    cursor: pointer;
+
+    transition: opacity 0.3s ease;
+}
+
+.btn-finalizar-compra:hover { opacity: 0.9; }
+
+.btn-finalizar-compra:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.sacola-seguranca {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    margin-top: 14px;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 13px;
+    color: rgba(63, 48, 38, 0.7);
+}
+
+.sacola-vazia {
+    text-align: center;
+
+    padding: 60px 20px;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 18px;
+    color: #3F3026;
+}
+
+.sacola-vazia a {
+    color: #6B452C;
+    text-decoration: underline;
+}
+
+
+/* ================================================
+   FOOTER — IDÊNTICO AO RESTO DO SITE
+================================================ */
+
+.site-footer {
+    width: 100%;
+    background-color: #71806C;
+    position: relative;
+    padding: 80px 0 40px;
+}
+
+.footer-content {
+    width: 100%;
+    padding: 0 7%;
+
+    display: grid;
+
+    grid-template-columns: 1.15fr 1.1fr 1.3fr;
+    grid-template-rows: auto auto;
+
+    column-gap: 80px;
+    row-gap: 30px;
+
+    align-items: start;
+}
+
+.footer-content > .footer-brand { grid-column: 1; grid-row: 1 / 3; align-self: center; }
+.footer-content > .footer-column:nth-child(2) { grid-column: 2; grid-row: 1; }
+.footer-content > .footer-column:nth-child(3) { grid-column: 3; grid-row: 1; }
+.footer-content > .footer-column:nth-child(4) { grid-column: 2; grid-row: 2; }
+.footer-content > .footer-contact { grid-column: 3; grid-row: 2; }
+
+.footer-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.footer-logo {
+    display: flex;
+    align-items: center;
+
+    font-family: "Cormorant Garamond", serif;
+    font-size: 64px;
+    font-weight: 600;
+    line-height: 1;
+
+    color: #3F3026;
+}
+
+.footer-logo-e { color: #FCFAF6; }
+
+.footer-subtitle {
+    margin-top: 12px;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 20px;
+    font-weight: 400;
+
+    color: #3F3026;
+    white-space: nowrap;
+}
+
+.footer-instagram {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: -50px;
+}
+
+.footer-instagram img { width: 220px; height: 220px; object-fit: contain; display: block; }
+
+.footer-column {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.footer-column h3 {
+    margin: 0 0 15px;
+
+    font-family: "Cormorant Garamond", serif;
+    font-size: 28px;
+    font-weight: 600;
+    line-height: 1;
+
+    color: #FCFAF6;
+}
+
+.footer-column p {
+    margin: 0;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 1.4;
+
+    color: #FCFAF6;
+}
+
+.footer-link {
+    font-family: "Montserrat", sans-serif;
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 1.4;
+
+    color: #FCFAF6;
+
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+
+    transition: color 0.3s ease;
+}
+
+.footer-link:hover { color: #E3A9BC; }
+
+.footer-contact h3 { margin-bottom: 15px; }
+.footer-contact p { max-width: 310px; margin-bottom: 18px; }
+
+.footer-button {
+    width: 100%;
+    max-width: 310px;
+
+    min-height: 45px;
+
+    display: flex;
+    align-items: center;
+
+    padding: 0 12px;
+
+    border: 3px solid #3F3026;
+    background: transparent;
+
+    text-decoration: none;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+
+    color: #3F3026;
+
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.footer-button:hover { background-color: #3F3026; color: #FCFAF6; }
+
+.footer-copyright {
+    width: 100%;
+    margin-top: 60px;
+    text-align: center;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 20px;
+    font-weight: 400;
+
+    color: #3F3026;
+}
+
+@media (max-width: 1000px) {
+
+    .site-footer { padding: 70px 0 40px; }
+
+    .footer-content {
+        padding: 0 40px;
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: auto auto auto;
+        row-gap: 50px;
+        column-gap: 40px;
+    }
+
+    .footer-content > .footer-brand { grid-column: 1 / 3; grid-row: 1; align-self: start; }
+    .footer-content > .footer-column:nth-child(2) { grid-column: 1; grid-row: 2; align-self: start; }
+    .footer-content > .footer-column:nth-child(3) { grid-column: 2; grid-row: 2; align-self: start; }
+    .footer-content > .footer-column:nth-child(4) { grid-column: 1; grid-row: 3; align-self: start; }
+    .footer-content > .footer-contact { grid-column: 2; grid-row: 3; align-self: start; }
+
+    .footer-column h3 { font-size: 24px; }
+    .footer-column p, .footer-link { font-size: 16px; }
+    .footer-copyright { margin-top: 80px; font-size: 15px; }
+}
+
+@media (max-width: 600px) {
+
+    .site-footer { padding: 55px 0 30px; }
+
+    .footer-content {
+        padding: 0 25px;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto auto;
+        column-gap: 20px;
+        row-gap: 35px;
+    }
+
+    .footer-content > .footer-brand { grid-column: 1 / 3; grid-row: 1; }
+    .footer-content > .footer-column:nth-child(2) { grid-column: 1; grid-row: 2; }
+    .footer-content > .footer-column:nth-child(3) { grid-column: 2; grid-row: 2; }
+    .footer-content > .footer-column:nth-child(4) { grid-column: 1; grid-row: 3; }
+    .footer-content > .footer-contact { grid-column: 2; grid-row: 3; }
+
+    .footer-brand { align-items: center; text-align: center; }
+    .footer-logo { font-size: 48px; }
+    .footer-subtitle { font-size: 14px; white-space: normal; }
+    .footer-instagram { justify-content: center; }
+    .footer-instagram img { width: 170px; height: 170px; }
+    .footer-column h3 { font-size: 24px; margin-bottom: 12px; }
+    .footer-column p, .footer-link { font-size: 14px; line-height: 1.45; }
+    .footer-button { max-width: 100%; min-height: 42px; font-size: 16px; }
+    .footer-copyright { margin-top: 65px; font-size: 13px; }
+}
+
+
+/* ================================================
+   RESPONSIVIDADE — SACOLA
+================================================ */
+
+@media (max-width: 900px) {
+
+    .sacola-conteudo { flex-direction: column; }
+    .sacola-resumo { width: 100%; }
+}
+
+@media (max-width: 480px) {
+
+    .sacola-item { flex-wrap: wrap; }
+}

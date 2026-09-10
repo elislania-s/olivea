@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Olivea — Coleção Navegação</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=Montserrat:wght@500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style2.css?v=2">
+</head>
+
+<body>
+
+    <!-- HEADER -->
+    <header class="site-header" id="topo">
+
+        <div class="header-inner">
+
+            <!-- LOGO -->
+            <a href="index.html" class="brand" aria-label="Olivea - início">
+                <span class="brand-letter">O</span>
+                <span class="brand-letter">L</span>
+                <span class="brand-letter">I</span>
+                <span class="brand-letter">V</span>
+                <span class="brand-letter brand-e">E</span>
+                <span class="brand-letter">A</span>
+
+                <!-- Borboleta que voa por cima do nome de tempos em tempos.
+                     TROQUE "borboleta.png" pela imagem real que você
+                     baixar/licenciar (PNG com fundo transparente). -->
+                <div class="brand-butterfly-wrap">
+                    <div class="brand-butterfly">
+                        <div class="butterfly-flap">
+                            <img src="borboleta.png" alt="">
+                        </div>
+                    </div>
+                </div>
+            </a>
+
+
+            <!-- MENU -->
+            <nav class="main-nav" aria-label="Navegação principal">
+
+                <a href="colecao.html">COLEÇÃO</a>
+
+                <a href="colares.html">COLARES</a>
+
+                <a href="brincos.html">BRINCOS</a>
+
+                <a href="pulseira.html">PULSEIRAS</a>
+
+                <a href="sobre.html">SOBRE A OLIVEA</a>
+
+            </nav>
+
+
+            <!-- SACOLA -->
+            <a href="#sacola" class="bag-link" aria-label="Sacola">
+
+                <img src="sacola.png" alt="Sacola">
+
+            </a>
+
+        </div>
+
+    </header>
+
+
+    <!-- ================================
+         HERO DA COLEÇÃO
+    ================================ -->
+
+    <section class="collection-hero">
+
+        <a href="index.html" class="collection-back" id="voltarBtn">
+            <span aria-hidden="true">←</span> VOLTAR
+        </a>
+
+        <div class="collection-heading">
+
+            <span class="collection-label">COLEÇÃO</span>
+
+            <h1 class="collection-title">Navegação</h1>
+
+            <p class="collection-description">
+                A coleção Navegação reúne peças inspiradas na delicadeza e na
+                beleza dos detalhes. Com diferentes formas e estilos, cada peça foi
+                pensada para complementar o seu visual e trazer um toque especial
+                para todos os momentos.
+            </p>
+
+        </div>
+
+        <div class="collection-controls">
+
+            <!-- FILTRO -->
+            <button type="button" class="control-btn" id="filtroBtn" aria-expanded="false" aria-controls="filtroPanel">
+                <svg class="control-icon" width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+                    <line x1="2" y1="5" x2="16" y2="5" stroke="currentColor" stroke-width="1.4" />
+                    <circle cx="11" cy="5" r="2" fill="#F6F0E5" stroke="currentColor" stroke-width="1.4" />
+                    <line x1="2" y1="13" x2="16" y2="13" stroke="currentColor" stroke-width="1.4" />
+                    <circle cx="7" cy="13" r="2" fill="#F6F0E5" stroke="currentColor" stroke-width="1.4" />
+                </svg>
+                FILTRO
+            </button>
+
+            <!-- CLASSIFICAR POR -->
+            <div class="sort-wrapper">
+
+                <button type="button" class="control-btn" id="classificarBtn" aria-expanded="false" aria-controls="classificarPanel">
+                    CLASSIFICAR POR
+                </button>
+
+                <div class="sort-panel" id="classificarPanel" hidden>
+                    <button type="button" class="sort-option" data-sort="asc">Preço crescente</button>
+                    <button type="button" class="sort-option" data-sort="desc">Preço decrescente</button>
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================================
+         PAINEL DE FILTRO
+    ================================ -->
+
+    <div class="filter-overlay" id="filtroOverlay" hidden></div>
+
+    <aside class="filter-panel" id="filtroPanel" aria-hidden="true">
+
+        <div class="filter-panel-header">
+            <h2>FILTRO</h2>
+
+            <button type="button" class="filter-close" id="filtroFechar" aria-label="Fechar filtro">
+                ✕
+            </button>
+        </div>
+
+        <div class="filter-panel-body">
+
+            <label class="filter-option">
+                <input type="checkbox" name="categoria" value="colares">
+                Colares
+            </label>
+
+            <label class="filter-option">
+                <input type="checkbox" name="categoria" value="brincos">
+                Brincos
+            </label>
+
+            <label class="filter-option">
+                <input type="checkbox" name="categoria" value="pulseiras">
+                Pulseiras
+            </label>
+
+        </div>
+
+        <button type="button" class="filter-apply" id="filtroAplicar">
+            APLICAR
+        </button>
+
+        <button type="button" class="filter-clear" id="filtroLimpar">
+            Limpar filtros
+        </button>
+
+    </aside>
+
+
+    <!-- ================================
+         GRID DE PRODUTOS
+    ================================ -->
+
+    <section class="collection-products">
+
+        <div class="collection-grid" id="collectionGrid">
+
+            <!-- PRODUTO 1 -->
+            <article class="product-card" data-category="brincos" data-price="69.90">
+
+                <div class="product-image-box">
+
+                    <img src="brinco.png" alt="Brinco Ponto de Luz" class="product-image">
+
+                    <div class="product-dots">
+                        <button class="dot active" data-image="brinco.png" aria-label="Imagem 1"></button>
+                        <button class="dot" data-image="brinco2.jpg" aria-label="Imagem 2"></button>
+                        <button class="dot" data-image="brinco.png" aria-label="Imagem 3"></button>
+                    </div>
+
+                </div>
+
+                <h3>BRINCO PONTO DE LUZ</h3>
+
+                <p class="product-price">R$ 69,90</p>
+
+                <a href="produto.html" class="buy-button">COMPRAR</a>
+
+            </article>
+
+
+            <!-- PRODUTO 2 -->
+            <article class="product-card" data-category="colares" data-price="69.90">
+
+                <div class="product-image-box">
+
+                    <img src="brinco.png" alt="Brinco Ponto de Luz" class="product-image">
+
+                    <div class="product-dots">
+                        <button class="dot active" data-image="brinco.png" aria-label="Imagem 1"></button>
+                        <button class="dot" data-image="brinco2.jpg" aria-label="Imagem 2"></button>
+                        <button class="dot" data-image="brinco.png" aria-label="Imagem 3"></button>
+                    </div>
+
+                </div>
+
+                <h3>BRINCO PONTO DE LUZ</h3>
+
+                <p class="product-price">R$ 69,90</p>
+
+                <a href="produto.html" class="buy-button">COMPRAR</a>
+
+            </article>
+
+
+            <!-- PRODUTO 3 -->
+            <article class="product-card" data-category="pulseiras" data-price="69.90">
+
+                <div class="product-image-box">
+
+                    <img src="brinco.png" alt="Brinco Ponto de Luz" class="product-image">
+
+                    <div class="product-dots">
+                        <button class="dot active" data-image="brinco.png" aria-label="Imagem 1"></button>
+                        <button class="dot" data-image="brinco2.jpg" aria-label="Imagem 2"></button>
+                        <button class="dot" data-image="brinco.png" aria-label="Imagem 3"></button>
+                    </div>
+
+                </div>
+
+                <h3>BRINCO PONTO DE LUZ</h3>
+
+                <p class="product-price">R$ 69,90</p>
+
+                <a href="produto.html" class="buy-button">COMPRAR</a>
+
+            </article>
+
+
+            <!-- PRODUTO 4 -->
+            <article class="product-card" data-category="brincos" data-price="69.90">
+
+                <div class="product-image-box">
+
+                    <img src="brinco.png" alt="Brinco Ponto de Luz" class="product-image">
+
+                    <div class="product-dots">
+                        <button class="dot active" data-image="brinco.png" aria-label="Imagem 1"></button>
+                        <button class="dot" data-image="brinco2.jpg" aria-label="Imagem 2"></button>
+                        <button class="dot" data-image="brinco.png" aria-label="Imagem 3"></button>
+                    </div>
+
+                </div>
+
+                <h3>BRINCO PONTO DE LUZ</h3>
+
+                <p class="product-price">R$ 69,90</p>
+
+                <a href="produto.html" class="buy-button">COMPRAR</a>
+
+            </article>
+
+
+            <!-- PRODUTO 5 -->
+            <article class="product-card" data-category="colares" data-price="69.90">
+
+                <div class="product-image-box">
+
+                    <img src="brinco.png" alt="Brinco Ponto de Luz" class="product-image">
+
+                    <div class="product-dots">
+                        <button class="dot active" data-image="brinco.png" aria-label="Imagem 1"></button>
+                        <button class="dot" data-image="brinco2.jpg" aria-label="Imagem 2"></button>
+                        <button class="dot" data-image="brinco.png" aria-label="Imagem 3"></button>
+                    </div>
+
+                </div>
+
+                <h3>BRINCO PONTO DE LUZ</h3>
+
+                <p class="product-price">R$ 69,90</p>
+
+                <a href="produto.html" class="buy-button">COMPRAR</a>
+
+            </article>
+
+
+            <!-- PRODUTO 6 -->
+            <article class="product-card" data-category="pulseiras" data-price="69.90">
+
+                <div class="product-image-box">
+
+                    <img src="brinco.png" alt="Brinco Ponto de Luz" class="product-image">
+
+                    <div class="product-dots">
+                        <button class="dot active" data-image="brinco.png" aria-label="Imagem 1"></button>
+                        <button class="dot" data-image="brinco2.jpg" aria-label="Imagem 2"></button>
+                        <button class="dot" data-image="brinco.png" aria-label="Imagem 3"></button>
+                    </div>
+
+                </div>
+
+                <h3>BRINCO PONTO DE LUZ</h3>
+
+                <p class="product-price">R$ 69,90</p>
+
+                <a href="produto.html" class="buy-button">COMPRAR</a>
+
+            </article>
+
+
+            <!-- PRODUTO 7 -->
+            <article class="product-card" data-category="brincos" data-price="69.90">
+
+                <div class="product-image-box">
+
+                    <img src="brinco.png" alt="Brinco Ponto de Luz" class="product-image">
+
+                    <div class="product-dots">
+                        <button class="dot active" data-image="brinco.png" aria-label="Imagem 1"></button>
+                        <button class="dot" data-image="brinco2.jpg" aria-label="Imagem 2"></button>
+                        <button class="dot" data-image="brinco.png" aria-label="Imagem 3"></button>
+                    </div>
+
+                </div>
+
+                <h3>BRINCO PONTO DE LUZ</h3>
+
+                <p class="product-price">R$ 69,90</p>
+
+                <a href="produto.html" class="buy-button">COMPRAR</a>
+
+            </article>
+
+
+            <!-- PRODUTO 8 -->
+            <article class="product-card" data-category="colares" data-price="69.90">
+
+                <div class="product-image-box">
+
+                    <img src="brinco.png" alt="Brinco Ponto de Luz" class="product-image">
+
+                    <div class="product-dots">
+                        <button class="dot active" data-image="brinco.png" aria-label="Imagem 1"></button>
+                        <button class="dot" data-image="brinco2.jpg" aria-label="Imagem 2"></button>
+                        <button class="dot" data-image="brinco.png" aria-label="Imagem 3"></button>
+                    </div>
+
+                </div>
+
+                <h3>BRINCO PONTO DE LUZ</h3>
+
+                <p class="product-price">R$ 69,90</p>
+
+                <a href="produto.html" class="buy-button">COMPRAR</a>
+
+            </article>
+
+
+            <!-- PRODUTO 9 -->
+            <article class="product-card" data-category="pulseiras" data-price="69.90">
+
+                <div class="product-image-box">
+
+                    <img src="brinco.png" alt="Brinco Ponto de Luz" class="product-image">
+
+                    <div class="product-dots">
+                        <button class="dot active" data-image="brinco.png" aria-label="Imagem 1"></button>
+                        <button class="dot" data-image="brinco2.jpg" aria-label="Imagem 2"></button>
+                        <button class="dot" data-image="brinco.png" aria-label="Imagem 3"></button>
+                    </div>
+
+                </div>
+
+                <h3>BRINCO PONTO DE LUZ</h3>
+
+                <p class="product-price">R$ 69,90</p>
+
+                <a href="produto.html" class="buy-button">COMPRAR</a>
+
+            </article>
+
+        </div>
+
+
+        <!-- VER MAIS -->
+        <a href="colecao.html" class="see-more">
+            Ver mais
+        </a>
+
+    </section>
+
+
+    <!-- ================================
+         BENEFÍCIOS
+    ================================ -->
+
+    <section class="benefits-section">
+
+        <!-- ENTREGA GRÁTIS -->
+        <div class="benefit-item">
+
+            <div class="benefit-icon">
+                <img src="entrega.png" alt="Entrega grátis">
+            </div>
+
+            <h3>ENTREGA GRÁTIS</h3>
+
+            <p>
+                Aproveite a entrega grátis em compras a partir de R$ 100.
+                Os pedidos que atingirem esse valor terão o frete gratuito.
+            </p>
+
+        </div>
+
+
+        <!-- DEVOLUÇÃO GRATUITA -->
+        <div class="benefit-item">
+
+            <div class="benefit-icon">
+                <img src="devolucao.png" alt="Devolução gratuita">
+            </div>
+
+            <h3>DEVOLUÇÃO GRATUITA</h3>
+
+            <p>
+                Você tem até 7 dias corridos após o recebimento do seu
+                pedido para solicitar a devolução. Para isso, entre em
+                contato com a gente informando o número do pedido.
+                O custo da devolução fica por nossa conta.
+            </p>
+
+        </div>
+
+
+        <!-- TODO BRASIL -->
+        <div class="benefit-item">
+
+            <div class="benefit-icon">
+                <img src="brasil.png" alt="Entrega para todo o Brasil">
+            </div>
+
+            <h3>TODO BRASIL</h3>
+
+            <p>
+                Entregamos para todo o Brasil. Faça seu pedido e receba
+                no conforto da sua casa.
+            </p>
+
+        </div>
+
+
+        <!-- PAGAMENTO -->
+        <div class="benefit-item">
+
+            <div class="benefit-icon">
+                <img src="cartao.png" alt="Formas de pagamento">
+            </div>
+
+            <h3>PAGAMENTO</h3>
+
+            <p>
+                Aceitamos cartão de crédito, cartão de débito e Pix.
+                Você também pode parcelar sua compra em até 4x sem juros.
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================================
+         FOOTER
+    ================================ -->
+
+    <footer class="site-footer">
+
+        <div class="footer-content">
+
+            <!-- LOGO -->
+            <div class="footer-brand">
+
+                <a href="index.html" class="footer-logo-link" aria-label="Olivea - início">
+                    <div class="footer-logo">
+                        <span>OLIV</span><span class="footer-logo-e">E</span><span>A</span>
+                    </div>
+                </a>
+
+                <p class="footer-subtitle">
+                    AÇO INOXIDÁVEL · SEMIJOIAS
+                </p>
+
+                <a href="https://www.instagram.com/by.oliveaa/" class="footer-instagram" target="_blank" rel="noopener noreferrer">
+                    <img src="instagram.png" alt="Instagram">
+                </a>
+
+            </div>
+
+
+            <!-- INFORMAÇÕES -->
+            <div class="footer-column">
+
+                <h3>INFORMAÇÃO:</h3>
+
+                <a href="atendimento.html" class="footer-link">
+                    Atendimento ao Cliente
+                </a>
+
+                <a href="entrega.html" class="footer-link">
+                    Envio e Entrega
+                </a>
+
+            </div>
+
+
+            <!-- CONTATO -->
+            <div class="footer-column">
+
+                <h3>CONTATO:</h3>
+
+                <p>
+                    Email: contato@olivea.com<br>
+                    WhatsApp: (71) 9 8143-7753<br>
+                    Instagram: by.oliveaa
+                </p>
+
+            </div>
+
+
+            <!-- CATEGORIAS -->
+            <div class="footer-column">
+
+                <h3>CATEGORIAS:</h3>
+
+                <a href="colares.html" class="footer-link">
+                    Colares
+                </a>
+
+                <a href="brincos.html" class="footer-link">
+                    Brincos
+                </a>
+
+                <a href="pulseira.html" class="footer-link">
+                    Pulseiras
+                </a>
+
+                <a href="colecao.html" class="footer-link">
+                    Coleção
+                </a>
+
+                <a href="sobre.html" class="footer-link">
+                    Sobre a Olivea
+                </a>
+
+            </div>
+
+
+            <!-- FALE CONOSCO -->
+            <div class="footer-column footer-contact">
+
+                <h3>ME MANDE UM OI</h3>
+
+                <p>
+                    Ficou com alguma dúvida sobre
+                    nossos produtos ou seu pedido?
+                    Fale diretamente com a gente pelo
+                    WhatsApp. Estamos à disposição
+                    para te atender e ajudar no que
+                    precisar.
+                </p>
+
+                <a href="https://wa.me/5571981437753"
+                   class="footer-button"
+                   target="_blank"
+                   rel="noopener noreferrer">
+                    FALE CONOSCO
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <!-- COPYRIGHT -->
+
+        <div class="footer-copyright">
+            © 2026 Olivea
+        </div>
+
+    </footer>
+
+
+    <script src="script2.js"></script>
+
+</body>
+
+</html>

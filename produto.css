@@ -1,0 +1,1075 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+}
+
+body {
+    background-color: #F6F0E5;
+    color: #3F3026;
+}
+
+
+/* ================================================
+   ================================================
+   HEADER — IDÊNTICO AO RESTO DO SITE
+   (copiado de style2.css, sem nenhuma alteração)
+   ================================================
+   ================================================ */
+
+.site-header {
+    width: 100%;
+    height: auto;
+    background-color: #F6F0E5;
+
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.header-inner {
+    width: 100%;
+    min-height: 150px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    position: relative;
+
+    padding: 18px 60px 20px;
+}
+
+.brand {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+
+    text-decoration: none;
+
+    font-family: "Cormorant Garamond", serif;
+    font-size: 64px;
+    font-weight: 600;
+    line-height: 1;
+
+    color: #3F3026;
+}
+
+.brand-letter {
+    color: #3F3026;
+}
+
+.brand-e {
+    color: #71806C;
+}
+
+.brand-butterfly-wrap {
+    position: absolute;
+    inset: 0;
+
+    overflow: visible;
+    pointer-events: none;
+
+    z-index: 2;
+}
+
+.brand-butterfly {
+    position: absolute;
+
+    width: 46px;
+    height: auto;
+
+    top: 55%;
+    left: -10%;
+
+    opacity: 0;
+
+    animation: butterfly-fly 15s ease-in-out infinite;
+}
+
+@keyframes butterfly-fly {
+    0% { left: -10%; top: 60%; opacity: 0; transform: rotate(-6deg) scale(0.75); }
+    6% { opacity: 1; }
+    25% { left: 20%; top: 15%; transform: rotate(5deg) scale(0.95); }
+    50% { left: 55%; top: 45%; transform: rotate(-5deg) scale(1.05); }
+    72% { left: 100%; top: 10%; opacity: 1; transform: rotate(4deg) scale(0.9); }
+    80% { opacity: 0; }
+    100% { left: 100%; top: 10%; opacity: 0; }
+}
+
+.butterfly-flap {
+    display: block;
+    transform-origin: center;
+    animation: wing-flap 0.24s ease-in-out infinite alternate;
+}
+
+.butterfly-flap img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+@keyframes wing-flap {
+    0% { transform: scaleX(1); }
+    100% { transform: scaleX(0.72); }
+}
+
+@media (max-width: 900px) {
+    .brand-butterfly { width: 32px; }
+}
+
+@media (max-width: 480px) {
+    .brand-butterfly { width: 26px; }
+}
+
+.main-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 36px;
+
+    margin-top: 18px;
+}
+
+.main-nav a {
+    position: relative;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+
+    color: #3F3026;
+
+    text-decoration: none;
+
+    white-space: nowrap;
+}
+
+.main-nav a::after {
+    content: "";
+
+    position: absolute;
+    left: 0;
+    bottom: -4px;
+
+    width: 100%;
+    height: 1px;
+
+    background-color: currentColor;
+
+    transform: scaleX(0);
+    transform-origin: left;
+
+    transition: transform 0.3s ease;
+}
+
+.main-nav a:hover::after,
+.main-nav a:focus-visible::after {
+    transform: scaleX(1);
+}
+
+.bag-link {
+    position: absolute;
+
+    right: 60px;
+    top: 50%;
+
+    transform: translateY(-50%);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bag-link img {
+    width: 50px;
+    height: 46px;
+
+    object-fit: contain;
+    display: block;
+}
+
+@media (max-width: 900px) {
+
+    .header-inner {
+        min-height: 120px;
+        padding: 16px 20px 18px;
+    }
+
+    .brand { font-size: 46px; }
+
+    .main-nav {
+        gap: 18px;
+        margin-top: 12px;
+        overflow-x: auto;
+        max-width: calc(100% - 50px);
+        scrollbar-width: none;
+    }
+
+    .main-nav::-webkit-scrollbar { display: none; }
+
+    .main-nav a { font-size: 11px; }
+
+    .bag-link { right: 20px; }
+
+    .bag-link img { width: 40px; height: 37px; }
+}
+
+@media (max-width: 480px) {
+
+    .header-inner { padding-left: 15px; padding-right: 15px; }
+
+    .brand { font-size: 40px; }
+
+    .main-nav { gap: 14px; }
+
+    .main-nav a { font-size: 9px; }
+
+    .bag-link { right: 14px; }
+
+    .bag-link img { width: 36px; height: 33px; }
+}
+
+
+/* ================================================
+   TOPO DA PÁGINA DE PRODUTO
+   (mesma linguagem visual do topo das
+   páginas de coleção: voltar + categoria)
+================================================ */
+
+.produto-topo {
+    width: 100%;
+
+    padding: 40px 60px 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    background-color: #F6F0E5;
+}
+
+.produto-voltar {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+
+    color: rgba(63, 48, 38, 0.6);
+
+    text-decoration: none;
+
+    transition: color 0.3s ease;
+}
+
+.produto-voltar:hover {
+    color: #3F3026;
+}
+
+.produto-categoria-topo {
+    font-family: "Montserrat", sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+
+    color: rgba(63, 48, 38, 0.6);
+}
+
+
+/* ================================================
+   PRODUTO — DUAS COLUNAS
+================================================ */
+
+.produto-secao {
+    width: 100%;
+
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 80px;
+
+    padding: 40px 60px 100px;
+
+    background-color: #F6F0E5;
+}
+
+
+/* ---- Galeria ---- */
+
+.produto-galeria {
+    width: 100%;
+    max-width: 460px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.produto-zoom-box {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background-color: #F6F0E5;
+    overflow: hidden;
+
+    cursor: zoom-in;
+}
+
+.produto-zoom-box img {
+    width: 78%;
+    height: 78%;
+
+    object-fit: contain;
+    display: block;
+
+    pointer-events: none;
+}
+
+.produto-zoom-dica {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+
+    width: 36px;
+    height: 36px;
+
+    border-radius: 50%;
+    background-color: rgba(63, 48, 38, 0.85);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    pointer-events: none;
+}
+
+.produto-zoom-dica svg {
+    width: 17px;
+    height: 17px;
+    stroke: #FCFAF6;
+}
+
+.produto-lens {
+    display: none;
+
+    position: absolute;
+
+    width: 160px;
+    height: 160px;
+
+    border: 2px solid #FCFAF6;
+    border-radius: 50%;
+
+    background-repeat: no-repeat;
+
+    pointer-events: none;
+
+    box-shadow: 0 4px 18px rgba(63, 48, 38, 0.35);
+}
+
+/* Bolinhas, mesmo padrão usado nos cards do site */
+.produto-dots {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 6px;
+
+    margin-top: 18px;
+}
+
+.produto-dots .dot {
+    width: 7px;
+    height: 7px;
+
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+
+    background-color: #BDB8B0;
+
+    cursor: pointer;
+
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.produto-dots .dot.active {
+    background-color: #3F3026;
+    transform: scale(1.15);
+}
+
+
+/* ---- Informações ---- */
+
+.produto-info {
+    width: 100%;
+    max-width: 420px;
+
+    padding-top: 6px;
+}
+
+.produto-nome {
+    margin: 0 0 14px;
+
+    font-family: "Cormorant Garamond", serif;
+    font-size: 40px;
+    font-weight: 600;
+    line-height: 1.1;
+
+    color: #6B452C;
+}
+
+.produto-preco {
+    margin: 0 0 22px;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+
+    color: #3F3026;
+}
+
+.produto-acoes {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    margin-bottom: 34px;
+}
+
+.btn-adicionar-sacola {
+    flex: 1;
+    height: 46px;
+
+    border: 1px solid #3F3026;
+    background-color: transparent;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+
+    color: #3F3026;
+
+    cursor: pointer;
+
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.btn-adicionar-sacola:hover {
+    background-color: #3F3026;
+    color: #FCFAF6;
+}
+
+.produto-qtd {
+    display: flex;
+    align-items: center;
+
+    border: 1px solid #3F3026;
+}
+
+.produto-qtd button {
+    width: 34px;
+    height: 46px;
+
+    border: none;
+    background: transparent;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: #3F3026;
+
+    cursor: pointer;
+}
+
+.produto-qtd input {
+    width: 34px;
+    height: 46px;
+
+    border: none;
+    border-left: 1px solid #3F3026;
+    border-right: 1px solid #3F3026;
+
+    text-align: center;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: #3F3026;
+
+    background: transparent;
+
+}
+
+.produto-qtd input::-webkit-outer-spin-button,
+.produto-qtd input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.produto-descricao-bloco h2 {
+    margin: 0 0 12px;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+
+    color: #6B452C;
+}
+
+.produto-descricao-bloco p {
+    margin: 0;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.6;
+
+    color: #3F3026;
+}
+
+.produto-selo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    margin-top: 26px;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 13px;
+
+    color: rgba(63, 48, 38, 0.7);
+}
+
+
+/* ================================================
+   MINI SACOLA (TOAST DE CONFIRMAÇÃO)
+================================================ */
+
+.mini-sacola {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+
+    width: 300px;
+    max-width: calc(100% - 40px);
+
+    background-color: #FCFAF6;
+    border: 1px solid rgba(63, 48, 38, 0.15);
+    box-shadow: 0 12px 30px rgba(63, 48, 38, 0.18);
+
+    padding: 18px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    z-index: 3000;
+
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+
+    transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
+}
+
+.mini-sacola.is-open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.mini-sacola-topo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: #3F3026;
+}
+
+.mini-sacola-fechar {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+    color: #3F3026;
+}
+
+.mini-sacola-link {
+    align-self: flex-start;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: #3F3026;
+
+    text-decoration: underline;
+}
+
+
+/* ================================================
+   LIGHTBOX (ZOOM EM TELA CHEIA)
+================================================ */
+
+.produto-lightbox {
+    position: fixed;
+    inset: 0;
+
+    background-color: rgba(63, 48, 38, 0.92);
+
+    z-index: 4000;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    opacity: 0;
+    visibility: hidden;
+
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.produto-lightbox.is-open {
+    opacity: 1;
+    visibility: visible;
+}
+
+.produto-lightbox-fechar {
+    position: absolute;
+    top: 24px;
+    right: 30px;
+
+    background: none;
+    border: none;
+
+    font-size: 30px;
+    line-height: 1;
+    color: #FCFAF6;
+
+    cursor: pointer;
+}
+
+.produto-lightbox-dica {
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 14px;
+    color: rgba(252, 250, 246, 0.75);
+}
+
+.produto-lightbox img {
+    max-width: 88%;
+    max-height: 82%;
+
+    object-fit: contain;
+
+    cursor: zoom-in;
+
+    transition: transform 0.35s ease;
+}
+
+.produto-lightbox img.is-zoomed {
+    cursor: zoom-out;
+    transform: scale(2.2);
+}
+
+
+/* ================================================
+   ================================================
+   BENEFÍCIOS — IDÊNTICO AO RESTO DO SITE
+   ================================================
+   ================================================ */
+
+.benefits-section {
+    width: 100%;
+
+    background-color: #F6F0E5;
+
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+
+    column-gap: 55px;
+
+    padding: 90px 45px 100px;
+}
+
+.benefit-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+
+    min-width: 0;
+}
+
+.benefit-icon {
+    width: 100%;
+    height: 260px;
+
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-start;
+
+    margin-bottom: 6px;
+}
+
+.benefit-icon img {
+    width: auto;
+    height: 260px;
+
+    object-fit: contain;
+    display: block;
+}
+
+.benefit-item h3 {
+    margin: 0 0 20px;
+
+    font-family: "Cormorant Garamond", serif;
+    font-size: 28px;
+    font-weight: 500;
+    line-height: 1;
+
+    color: #6B452C;
+}
+
+.benefit-item p {
+    max-width: 290px;
+    margin: 0;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 1.35;
+
+    color: #3F3026;
+}
+
+@media (max-width: 900px) {
+
+    .benefits-section {
+        grid-template-columns: repeat(2, 1fr);
+        column-gap: 35px;
+        row-gap: 70px;
+        padding: 70px 30px 80px;
+    }
+
+    .benefit-icon { height: 175px; margin-bottom: 6px; }
+    .benefit-icon img { height: 175px; }
+    .benefit-item h3 { font-size: 24px; margin-bottom: 15px; }
+    .benefit-item p { font-size: 15px; line-height: 1.45; }
+}
+
+@media (max-width: 480px) {
+
+    .benefits-section {
+        grid-template-columns: 1fr 1fr;
+        column-gap: 20px;
+        row-gap: 55px;
+        padding: 55px 20px 65px;
+    }
+
+    .benefit-icon { height: 115px; margin-bottom: 6px; }
+    .benefit-icon img { height: 115px; }
+    .benefit-item h3 { font-size: 21px; }
+    .benefit-item p { font-size: 13px; line-height: 1.4; }
+}
+
+
+/* ================================================
+   ================================================
+   FOOTER — IDÊNTICO AO RESTO DO SITE
+   ================================================
+   ================================================ */
+
+.site-footer {
+    width: 100%;
+
+    background-color: #71806C;
+
+    position: relative;
+
+    padding: 80px 0 40px;
+}
+
+.footer-content {
+    width: 100%;
+
+    padding: 0 7%;
+
+    display: grid;
+
+    grid-template-columns: 1.15fr 1.1fr 1.3fr;
+    grid-template-rows: auto auto;
+
+    column-gap: 80px;
+    row-gap: 30px;
+
+    align-items: start;
+}
+
+.footer-content > .footer-brand { grid-column: 1; grid-row: 1 / 3; align-self: center; }
+.footer-content > .footer-column:nth-child(2) { grid-column: 2; grid-row: 1; }
+.footer-content > .footer-column:nth-child(3) { grid-column: 3; grid-row: 1; }
+.footer-content > .footer-column:nth-child(4) { grid-column: 2; grid-row: 2; }
+.footer-content > .footer-contact { grid-column: 3; grid-row: 2; }
+
+.footer-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.footer-logo {
+    display: flex;
+    align-items: center;
+
+    font-family: "Cormorant Garamond", serif;
+    font-size: 64px;
+    font-weight: 600;
+    line-height: 1;
+
+    color: #3F3026;
+}
+
+.footer-logo-e { color: #FCFAF6; }
+
+.footer-subtitle {
+    margin-top: 12px;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 20px;
+    font-weight: 400;
+
+    color: #3F3026;
+
+    white-space: nowrap;
+}
+
+.footer-instagram {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-top: -50px;
+}
+
+.footer-instagram img {
+    width: 220px;
+    height: 220px;
+
+    object-fit: contain;
+    display: block;
+}
+
+.footer-column {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.footer-column h3 {
+    margin: 0 0 15px;
+
+    font-family: "Cormorant Garamond", serif;
+    font-size: 28px;
+    font-weight: 600;
+    line-height: 1;
+
+    color: #FCFAF6;
+}
+
+.footer-column p {
+    margin: 0;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 1.4;
+
+    color: #FCFAF6;
+}
+
+.footer-link {
+    font-family: "Montserrat", sans-serif;
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 1.4;
+
+    color: #FCFAF6;
+
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+
+    transition: color 0.3s ease;
+}
+
+.footer-link:hover { color: #E3A9BC; }
+
+.footer-contact h3 { margin-bottom: 15px; }
+
+.footer-contact p {
+    max-width: 310px;
+    margin-bottom: 18px;
+}
+
+.footer-button {
+    width: 100%;
+    max-width: 310px;
+
+    min-height: 45px;
+
+    display: flex;
+    align-items: center;
+
+    padding: 0 12px;
+
+    border: 3px solid #3F3026;
+
+    background: transparent;
+
+    text-decoration: none;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+
+    color: #3F3026;
+
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.footer-button:hover {
+    background-color: #3F3026;
+    color: #FCFAF6;
+}
+
+.footer-copyright {
+    width: 100%;
+
+    margin-top: 60px;
+
+    text-align: center;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 20px;
+    font-weight: 400;
+
+    color: #3F3026;
+}
+
+@media (max-width: 1000px) {
+
+    .site-footer { padding: 70px 0 40px; }
+
+    .footer-content {
+        padding: 0 40px;
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: auto auto auto;
+        row-gap: 50px;
+        column-gap: 40px;
+    }
+
+    .footer-content > .footer-brand { grid-column: 1 / 3; grid-row: 1; align-self: start; }
+    .footer-content > .footer-column:nth-child(2) { grid-column: 1; grid-row: 2; align-self: start; }
+    .footer-content > .footer-column:nth-child(3) { grid-column: 2; grid-row: 2; align-self: start; }
+    .footer-content > .footer-column:nth-child(4) { grid-column: 1; grid-row: 3; align-self: start; }
+    .footer-content > .footer-contact { grid-column: 2; grid-row: 3; align-self: start; }
+
+    .footer-column h3 { font-size: 24px; }
+    .footer-column p, .footer-link { font-size: 16px; }
+    .footer-copyright { margin-top: 80px; font-size: 15px; }
+}
+
+@media (max-width: 600px) {
+
+    .site-footer { padding: 55px 0 30px; }
+
+    .footer-content {
+        padding: 0 25px;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto auto;
+        column-gap: 20px;
+        row-gap: 35px;
+    }
+
+    .footer-content > .footer-brand { grid-column: 1 / 3; grid-row: 1; }
+    .footer-content > .footer-column:nth-child(2) { grid-column: 1; grid-row: 2; }
+    .footer-content > .footer-column:nth-child(3) { grid-column: 2; grid-row: 2; }
+    .footer-content > .footer-column:nth-child(4) { grid-column: 1; grid-row: 3; }
+    .footer-content > .footer-contact { grid-column: 2; grid-row: 3; }
+
+    .footer-brand { align-items: center; text-align: center; }
+    .footer-logo { font-size: 48px; }
+    .footer-subtitle { font-size: 14px; white-space: normal; }
+    .footer-instagram { justify-content: center; }
+    .footer-instagram img { width: 170px; height: 170px; }
+    .footer-column h3 { font-size: 24px; margin-bottom: 12px; }
+    .footer-column p, .footer-link { font-size: 14px; line-height: 1.45; }
+    .footer-button { max-width: 100%; min-height: 42px; font-size: 16px; }
+    .footer-copyright { margin-top: 65px; font-size: 13px; }
+}
+
+
+/* ================================================
+   RESPONSIVIDADE — PRODUTO
+================================================ */
+
+@media (max-width: 900px) {
+
+    .produto-topo {
+        padding: 25px 25px 0;
+    }
+
+    .produto-secao {
+        flex-direction: column;
+        align-items: center;
+        gap: 30px;
+
+        padding: 25px 25px 70px;
+    }
+
+    .produto-galeria,
+    .produto-info {
+        max-width: 420px;
+    }
+
+    .produto-nome { font-size: 32px; }
+
+    .produto-lens { display: none !important; }
+}
+
+@media (max-width: 480px) {
+
+    .produto-acoes {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+
+    .produto-qtd { justify-content: center; }
+}

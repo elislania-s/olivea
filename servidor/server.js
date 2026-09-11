@@ -21,6 +21,7 @@
 
 require("dotenv").config();
 
+const path = require("path");
 const express = require("express");
 const cors = require("cors");
 const { MercadoPagoConfig, Preference, Payment } = require("mercadopago");
@@ -30,6 +31,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Serve o próprio site (tudo que estiver dentro da pasta "public/")
+// Assim o site e o servidor ficam na MESMA url — não precisa mais
+// apontar o mercadopago.js pra um endereço diferente.
+app.use(express.static(path.join(__dirname, "public")));
+
 if (!process.env.MP_ACCESS_TOKEN) {
     console.error(
         "\n[Olivea] Faltou configurar o MP_ACCESS_TOKEN no arquivo .env. " +
@@ -37,10 +43,11 @@ if (!process.env.MP_ACCESS_TOKEN) {
     );
 }
 
-if (!process.env.URL_DO_SITE) {
+if (!process.env.URL_PUBLICA) {
     console.error(
-        "\n[Olivea] Faltou configurar o URL_DO_SITE no arquivo .env " +
-        "(ex: https://www.olivea.com.br).\n"
+        "\n[Olivea] Faltou configurar o URL_PUBLICA no arquivo .env " +
+        "(o endereço público onde este servidor está publicado, ex: " +
+        "https://olivea.onrender.com).\n"
     );
 }
 
@@ -69,7 +76,10 @@ app.post("/api/criar-preferencia", async (req, res) => {
             currency_id: "BRL"
         }));
 
-        const urlSite = process.env.URL_DO_SITE;
+        // Como agora o site e o servidor são o MESMO endereço
+        // (o server.js está servindo a pasta public/), só existe
+        // uma URL pra tudo.
+        const urlPublica = process.env.URL_PUBLICA;
 
         const preference = new Preference(client);
 
@@ -78,9 +88,9 @@ app.post("/api/criar-preferencia", async (req, res) => {
                 items: itens,
 
                 back_urls: {
-                    success: urlSite + "/pagamento-sucesso.html",
-                    failure: urlSite + "/pagamento-erro.html",
-                    pending: urlSite + "/pagamento-pendente.html"
+                    success: urlPublica + "/pagamento-sucesso.html",
+                    failure: urlPublica + "/pagamento-erro.html",
+                    pending: urlPublica + "/pagamento-pendente.html"
                 },
 
                 auto_return: "approved",
@@ -88,7 +98,7 @@ app.post("/api/criar-preferencia", async (req, res) => {
                 // Endereço que o Mercado Pago vai chamar avisando o
                 // status real do pagamento (mais confiável que só o
                 // back_url, que depende do cliente ser redirecionado).
-                notification_url: process.env.URL_DO_SERVIDOR + "/api/webhook-mercadopago"
+                notification_url: urlPublica + "/api/webhook-mercadopago"
             }
         });
 

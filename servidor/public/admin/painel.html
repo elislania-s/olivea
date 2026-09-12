@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Olivea — Painel Admin</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=Montserrat:wght@400;500&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="admin.css">
+</head>
+
+<body>
+
+    <header class="admin-header">
+        <h1>OLIVEA <span>· admin</span></h1>
+        <button type="button" id="btnSair" class="admin-btn-sair">Sair</button>
+    </header>
+
+    <nav class="admin-tabs">
+        <button type="button" class="admin-tab active" data-tab="produtos">Produtos</button>
+        <button type="button" class="admin-tab" data-tab="configuracoes">Configurações</button>
+    </nav>
+
+
+    <!-- ================================
+         ABA PRODUTOS
+    ================================= -->
+
+    <section class="admin-secao" id="abaProdutos">
+
+        <div class="admin-secao-topo">
+            <h2>Produtos</h2>
+            <button type="button" class="admin-btn-primario" id="btnNovoProduto">+ Novo produto</button>
+        </div>
+
+        <div class="admin-filtros">
+            <button type="button" class="admin-filtro active" data-categoria="todas">Todas</button>
+            <button type="button" class="admin-filtro" data-categoria="colares">Colares</button>
+            <button type="button" class="admin-filtro" data-categoria="brincos">Brincos</button>
+            <button type="button" class="admin-filtro" data-categoria="pulseiras">Pulseiras</button>
+        </div>
+
+        <div class="admin-lista-produtos" id="listaProdutos">
+            <p class="admin-carregando">Carregando produtos...</p>
+        </div>
+
+    </section>
+
+
+    <!-- ================================
+         ABA CONFIGURAÇÕES
+    ================================= -->
+
+    <section class="admin-secao" id="abaConfiguracoes" hidden>
+
+        <h2>Configurações gerais</h2>
+
+        <div class="admin-config-bloco">
+
+            <label class="admin-campo">
+                Produtos por página (nas listas de coleção)
+                <input type="number" id="configItensPorPagina" min="3" step="3">
+            </label>
+
+            <label class="admin-campo">
+                Banner da página "Coleção"
+                <input type="file" id="configBannerArquivo" accept="image/*">
+            </label>
+            <img id="configBannerPreview" class="admin-banner-preview" hidden>
+
+            <button type="button" class="admin-btn-primario" id="btnSalvarConfig">Salvar configurações</button>
+            <p class="admin-mensagem" id="mensagemConfig"></p>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================================
+         MODAL: CRIAR/EDITAR PRODUTO
+    ================================= -->
+
+    <div class="admin-modal-overlay" id="modalOverlay" hidden>
+
+        <form class="admin-modal" id="formProduto">
+
+            <div class="admin-modal-topo">
+                <h2 id="modalTitulo">Novo produto</h2>
+                <button type="button" class="admin-modal-fechar" id="btnFecharModal">✕</button>
+            </div>
+
+            <input type="hidden" id="produtoId">
+
+            <label class="admin-campo">
+                Nome
+                <input type="text" id="produtoNome" required>
+            </label>
+
+            <label class="admin-campo">
+                Categoria
+                <select id="produtoCategoria" required>
+                    <option value="colares">Colares</option>
+                    <option value="brincos">Brincos</option>
+                    <option value="pulseiras">Pulseiras</option>
+                </select>
+            </label>
+
+            <label class="admin-campo">
+                Preço (R$)
+                <input type="number" id="produtoPreco" step="0.01" min="0" required>
+            </label>
+
+            <label class="admin-campo">
+                Estoque disponível
+                <input type="number" id="produtoEstoque" min="0" value="1" required>
+            </label>
+
+            <label class="admin-campo">
+                Descrição
+                <textarea id="produtoDescricao" rows="4"></textarea>
+            </label>
+
+            <label class="admin-campo">
+                Fotos (a primeira é a foto principal)
+                <input type="file" id="produtoFotosArquivo" accept="image/*" multiple>
+            </label>
+            <div class="admin-fotos-preview" id="produtoFotosPreview"></div>
+
+            <div class="admin-campo-linha">
+                <label class="admin-checkbox">
+                    <input type="checkbox" id="produtoDestaque">
+                    Mostrar nos Destaques da home
+                </label>
+
+                <label class="admin-checkbox">
+                    <input type="checkbox" id="produtoAtivo" checked>
+                    Produto visível no site
+                </label>
+            </div>
+
+            <label class="admin-campo">
+                Ordem de exibição (menor aparece primeiro)
+                <input type="number" id="produtoOrdem" value="0">
+            </label>
+
+            <details class="admin-detalhes-frete">
+                <summary>Peso e dimensões (usado no cálculo de frete)</summary>
+
+                <div class="admin-campo-linha">
+                    <label class="admin-campo">
+                        Peso (kg)
+                        <input type="number" id="produtoPeso" step="0.01" value="0.1">
+                    </label>
+                    <label class="admin-campo">
+                        Altura (cm)
+                        <input type="number" id="produtoAltura" step="0.1" value="3">
+                    </label>
+                    <label class="admin-campo">
+                        Largura (cm)
+                        <input type="number" id="produtoLargura" step="0.1" value="10">
+                    </label>
+                    <label class="admin-campo">
+                        Comprimento (cm)
+                        <input type="number" id="produtoComprimento" step="0.1" value="15">
+                    </label>
+                </div>
+            </details>
+
+            <p class="admin-mensagem" id="mensagemProduto"></p>
+
+            <div class="admin-modal-acoes">
+                <button type="button" class="admin-btn-secundario" id="btnCancelarModal">Cancelar</button>
+                <button type="submit" class="admin-btn-primario">Salvar produto</button>
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <script src="admin.js"></script>
+
+</body>
+
+</html>

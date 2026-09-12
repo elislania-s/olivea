@@ -24,12 +24,32 @@ require("dotenv").config();
 const path = require("path");
 const express = require("express");
 const cors = require("cors");
+const session = require("express-session");
 const { MercadoPagoConfig, Preference, Payment } = require("mercadopago");
+
+const { router: adminAuthRouter } = require("./admin-auth");
+const produtosRotas = require("./produtos-rotas");
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+// Sessão do admin (cookie assinado, guarda só "está logado ou não")
+app.use(session({
+    secret: process.env.SESSION_SECRET || "troque-isso-no-env",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        maxAge: 1000 * 60 * 60 * 8, // 8 horas
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production"
+    }
+}));
+
+// Rotas de login do admin e de produtos (públicas + administrativas)
+app.use(adminAuthRouter);
+app.use(produtosRotas);
 
 // Serve o próprio site (tudo que estiver dentro da pasta "public/")
 // Assim o site e o servidor ficam na MESMA url — não precisa mais

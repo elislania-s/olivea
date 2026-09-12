@@ -1,40 +1,34 @@
-document.addEventListener("DOMContentLoaded", function () {
-
-    // ============================================
-    // 0) VERIFICAÇÃO DE ARQUIVOS
-    //    Se algum script não carregou, avisa no
-    //    console em vez de travar tudo em silêncio.
-    // ============================================
-
-    if (typeof oliveaBuscarProduto !== "function") {
-        console.error(
-            "[Olivea] produtos-dados.js não foi carregado (ou está com " +
-            "outro nome/caminho). Verifique se o arquivo " +
-            "'produtos-dados.js' está na mesma pasta do produto.html e " +
-            "se o <script> dele vem ANTES do produto.js."
-        );
-    }
-
-    if (typeof oliveaAdicionarNaSacola !== "function") {
-        console.error(
-            "[Olivea] carrinho.js não foi carregado (ou está com outro " +
-            "nome/caminho). Verifique se o arquivo 'carrinho.js' está " +
-            "na mesma pasta do produto.html e se o <script> dele vem " +
-            "ANTES do produto.js."
-        );
-    }
-
+document.addEventListener("DOMContentLoaded", async function () {
 
     // ============================================
     // 1) CARREGA O PRODUTO PELA URL (?id=)
+    //    Agora vem do banco de dados (Supabase),
+    //    através da nossa própria API.
     // ============================================
 
     let produto = null;
 
     try {
         const params = new URLSearchParams(window.location.search);
-        const produtoId = params.get("id") || "1";
-        produto = oliveaBuscarProduto(produtoId);
+        const produtoId = params.get("id");
+
+        if (!produtoId) {
+            document.getElementById("produtoNome").textContent =
+                "Produto não especificado";
+            console.error("[Olivea] Nenhum ?id= foi passado na URL.");
+            return;
+        }
+
+        const resposta = await fetch("/api/produtos/" + produtoId);
+
+        if (!resposta.ok) {
+            document.getElementById("produtoNome").textContent =
+                "Produto não encontrado";
+            console.error("[Olivea] Produto não encontrado:", produtoId);
+            return;
+        }
+
+        produto = await resposta.json();
 
         document.title = "Olivea — " + produto.nome;
 
@@ -43,11 +37,16 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("produtoNome").textContent = produto.nome;
         document.getElementById("produtoDescricao").textContent = produto.descricao;
         document.getElementById("produtoPreco").textContent =
-            "R$ " + produto.preco.toFixed(2).replace(".", ",");
+            "R$ " + Number(produto.preco).toFixed(2).replace(".", ",");
 
     } catch (erro) {
         console.error("[Olivea] Erro ao carregar os dados do produto:", erro);
+        document.getElementById("produtoNome").textContent =
+            "Erro ao carregar o produto";
+        return;
     }
+
+    if (!produto) return;
 
 
     // ============================================
@@ -58,7 +57,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const thumbsContainer = document.getElementById("produtoThumbs");
 
     try {
-        if (produto && imagemPrincipal && thumbsContainer) {
+        if (imagemPrincipal && thumbsContainer && produto.imagens && produto.imagens.length) {
 
             imagemPrincipal.src = produto.imagens[0];
             imagemPrincipal.alt = produto.nome;
@@ -102,7 +101,8 @@ document.addEventListener("DOMContentLoaded", function () {
             });
 
             btnMais.addEventListener("click", () => {
-                inputQtd.value = parseInt(inputQtd.value || "1", 10) + 1;
+                const max = produto.estoque || 99;
+                inputQtd.value = Math.min(max, parseInt(inputQtd.value || "1", 10) + 1);
             });
         }
     } catch (erro) {
@@ -121,14 +121,14 @@ document.addEventListener("DOMContentLoaded", function () {
         const btnFecharMini = document.querySelector(".mini-sacola-fechar");
         let miniSacolaTimer = null;
 
+        if (produto.estoque <= 0 && btnAdicionar) {
+            btnAdicionar.textContent = "PRODUTO ESGOTADO";
+            btnAdicionar.disabled = true;
+        }
+
         if (btnAdicionar) {
 
             btnAdicionar.addEventListener("click", () => {
-
-                if (!produto) {
-                    alert("Não foi possível identificar este produto. Recarregue a página.");
-                    return;
-                }
 
                 if (typeof oliveaAdicionarNaSacola !== "function") {
                     alert(
@@ -218,7 +218,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
             }
 
-            // Clique/toque na imagem abre o zoom em tela cheia
             zoomBox.addEventListener("click", () => {
                 lightboxImg.src = imagemPrincipal.src;
                 lightboxImg.alt = imagemPrincipal.alt;
@@ -260,14 +259,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     lightbox.classList.remove("is-open");
                 }
             });
-
-        } else {
-            console.error(
-                "[Olivea] Algum elemento da lupa/lightbox não foi encontrado " +
-                "no HTML (produtoZoomBox, produtoLens, produtoLightbox, " +
-                "produtoLightboxImg). Confira se o produto.html usado é a " +
-                "versão mais recente."
-            );
         }
     } catch (erro) {
         console.error("[Olivea] Erro na lupa/lightbox:", erro);

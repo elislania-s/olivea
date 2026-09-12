@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Olivea — Admin</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=Montserrat:wght@400;500&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="admin.css">
+</head>
+
+<body class="admin-login-body">
+
+    <form class="admin-login-card" id="formLogin">
+
+        <h1>OLIVEA</h1>
+        <p class="admin-login-subtitulo">Painel administrativo</p>
+
+        <label>
+            Usuário
+            <input type="text" id="usuario" autocomplete="username" required>
+        </label>
+
+        <label>
+            Senha
+            <input type="password" id="senha" autocomplete="current-password" required>
+        </label>
+
+        <button type="submit">ENTRAR</button>
+
+        <p class="admin-login-erro" id="mensagemErro"></p>
+
+    </form>
+
+    <script src="admin.js"></script>
+    <script>
+        document.getElementById("formLogin").addEventListener("submit", async (evento) => {
+            evento.preventDefault();
+
+            const usuario = document.getElementById("usuario").value;
+            const senha = document.getElementById("senha").value;
+            const mensagemErro = document.getElementById("mensagemErro");
+
+            mensagemErro.textContent = "";
+
+            try {
+                const resposta = await fetch("/api/admin/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ usuario, senha })
+                });
+
+                if (resposta.ok) {
+                    window.location.href = "painel.html";
+                } else {
+                    const dados = await resposta.json();
+                    mensagemErro.textContent = dados.erro || "Usuário ou senha incorretos";
+                }
+
+            } catch (erro) {
+                mensagemErro.textContent = "Erro de conexão. Tente novamente.";
+            }
+        });
+    </script>
+
+</body>
+
+</html>

@@ -167,6 +167,9 @@ body {
     font-size: 14px;
     color: #F6F0E5;
 }
+.footer-logo-link {
+    text-decoration: none;
+}
 
 @media (max-width: 480px) {
 

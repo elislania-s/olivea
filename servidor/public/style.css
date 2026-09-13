@@ -2007,4 +2007,8 @@ body {
 
         font-size: 13px;
     }
+
+    .footer-logo-link {
+    text-decoration: none;
+}
 }

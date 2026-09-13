@@ -856,6 +856,10 @@ body {
     color: #3F3026;
 }
 
+.footer-logo-link {
+    text-decoration: none;
+}
+
 .footer-logo-e { color: #FCFAF6; }
 
 .footer-subtitle {

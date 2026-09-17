@@ -35,6 +35,12 @@ const { enviarEmailNovoPedido } = require("./email");
 
 const app = express();
 
+// O Render (e a maioria das hospedagens) coloca o site atrás de um
+// "proxy" — sem isso, o Express não reconhece corretamente que a
+// conexão é HTTPS, e o cookie de login não funciona direito em
+// produção (mesmo com usuário/senha certos).
+app.set("trust proxy", 1);
+
 app.use(cors());
 app.use(express.json());
 
@@ -46,7 +52,8 @@ app.use(session({
     cookie: {
         maxAge: 1000 * 60 * 60 * 8, // 8 horas
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production"
+        secure: "auto", // usa HTTPS automaticamente quando disponível
+        sameSite: "lax"
     }
 }));
 

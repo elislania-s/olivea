@@ -245,6 +245,24 @@ body {
    páginas de coleção: voltar + categoria)
 ================================================ */
 
+.produto-topo,
+.produto-secao {
+    opacity: 0;
+    transition: opacity 0.15s ease;
+}
+
+body.produto-pronto .produto-topo,
+body.produto-pronto .produto-secao {
+    opacity: 1;
+}
+
+.produto-carregando-aviso {
+    text-align: center;
+    padding: 60px 20px;
+    font-family: "Montserrat", sans-serif;
+    color: rgba(63, 48, 38, 0.6);
+}
+
 .produto-topo {
     width: 100%;
 

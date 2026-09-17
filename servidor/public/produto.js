@@ -15,6 +15,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         if (!produtoId) {
             document.getElementById("produtoNome").textContent =
                 "Produto não especificado";
+            document.body.classList.add("produto-pronto");
             console.error("[Olivea] Nenhum ?id= foi passado na URL.");
             return;
         }
@@ -24,6 +25,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         if (!resposta.ok) {
             document.getElementById("produtoNome").textContent =
                 "Produto não encontrado";
+            document.body.classList.add("produto-pronto");
             console.error("[Olivea] Produto não encontrado:", produtoId);
             return;
         }
@@ -31,6 +33,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         produto = await resposta.json();
 
         document.title = "Olivea — " + produto.nome;
+        document.body.classList.add("produto-pronto");
 
         document.getElementById("produtoCategoriaTopo").textContent =
             produto.categoria.toUpperCase();
@@ -43,6 +46,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         console.error("[Olivea] Erro ao carregar os dados do produto:", erro);
         document.getElementById("produtoNome").textContent =
             "Erro ao carregar o produto";
+        document.body.classList.add("produto-pronto");
         return;
     }
 

@@ -189,10 +189,10 @@ function iniciarPainel() {
         document.getElementById("produtoDestaque").checked = !!produto.destaque;
         document.getElementById("produtoAtivo").checked = !!produto.ativo;
         document.getElementById("produtoOrdem").value = produto.ordem || 0;
-        document.getElementById("produtoPeso").value = produto.peso_kg || 0.1;
-        document.getElementById("produtoAltura").value = produto.altura_cm || 3;
-        document.getElementById("produtoLargura").value = produto.largura_cm || 10;
-        document.getElementById("produtoComprimento").value = produto.comprimento_cm || 15;
+        document.getElementById("produtoPeso").value = produto.peso_kg || 0.2;
+        document.getElementById("produtoAltura").value = produto.altura_cm || 4;
+        document.getElementById("produtoLargura").value = produto.largura_cm || 12;
+        document.getElementById("produtoComprimento").value = produto.comprimento_cm || 17;
 
         fotosDoFormulario = Array.isArray(produto.imagens) ? [...produto.imagens] : [];
         renderizarFotosPreview();

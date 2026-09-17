@@ -562,6 +562,22 @@ body {
     padding: 80px 0 40px;
 }
 
+
+/* ================================
+   CONTEÚDO
+
+   3 colunas x 2 linhas:
+
+   [ LOGO ] [ INFORMAÇÃO ] [ CONTATO        ]
+   [ LOGO ] [ CATEGORIAS ] [ ME MANDE UM OI ]
+
+   A logo (footer-brand) ocupa a 1ª coluna
+   inteira (as duas linhas) e fica centralizada
+   verticalmente. Cada bloco é posicionado na
+   célula certa via grid-column/grid-row, sem
+   precisar mudar a ordem no HTML.
+================================ */
+
 .footer-content {
     width: 100%;
 
@@ -582,6 +598,9 @@ body {
     align-items: start;
 }
 
+
+/* LOGO — coluna 1, nas duas linhas, centralizada verticalmente */
+
 .footer-content > .footer-brand {
     grid-column: 1;
     grid-row: 1 / 3;
@@ -589,25 +608,42 @@ body {
     align-self: center;
 }
 
+
+/* INFORMAÇÃO — coluna 2, linha 1 */
+
 .footer-content > .footer-column:nth-child(2) {
     grid-column: 2;
     grid-row: 1;
 }
+
+
+/* CONTATO — coluna 3, linha 1 */
 
 .footer-content > .footer-column:nth-child(3) {
     grid-column: 3;
     grid-row: 1;
 }
 
+
+/* CATEGORIAS — coluna 2, linha 2 */
+
 .footer-content > .footer-column:nth-child(4) {
     grid-column: 2;
     grid-row: 2;
 }
 
+
+/* ME MANDE UM OI — coluna 3, linha 2 */
+
 .footer-content > .footer-contact {
     grid-column: 3;
     grid-row: 2;
 }
+
+
+/* ================================
+   LOGO
+================================ */
 
 .footer-brand {
     display: flex;
@@ -616,6 +652,22 @@ body {
 
     text-align: center;
 }
+
+
+/* REMOVE QUALQUER SUBLINHADO DA LOGO */
+
+.footer-logo-link {
+    text-decoration: none !important;
+    color: inherit;
+
+    border: none !important;
+    box-shadow: none !important;
+
+    display: inline-block;
+}
+
+
+/* LOGO */
 
 .footer-logo {
     display: flex;
@@ -627,11 +679,30 @@ body {
     line-height: 1;
 
     color: #3F3026;
+
+    text-decoration: none !important;
 }
+
+
+/* Remove qualquer linha criada por pseudo-elementos */
+
+.footer-logo-link::before,
+.footer-logo-link::after,
+.footer-logo::before,
+.footer-logo::after {
+    display: none !important;
+    content: none !important;
+}
+
 
 .footer-logo-e {
     color: #FCFAF6;
 }
+
+
+/* ================================
+   SUBTÍTULO DA LOGO
+================================ */
 
 .footer-subtitle {
     margin-top: 12px;
@@ -645,6 +716,11 @@ body {
     white-space: nowrap;
 }
 
+
+/* ================================
+   INSTAGRAM
+================================ */
+
 .footer-instagram {
     display: flex;
     align-items: center;
@@ -652,6 +728,7 @@ body {
 
     margin-top: -50px;
 }
+
 
 .footer-instagram img {
     width: 220px;
@@ -662,11 +739,17 @@ body {
     display: block;
 }
 
+
+/* ================================
+   COLUNAS
+================================ */
+
 .footer-column {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
 }
+
 
 .footer-column h3 {
     margin: 0 0 15px;
@@ -679,6 +762,7 @@ body {
     color: #FCFAF6;
 }
 
+
 .footer-column p {
     margin: 0;
 
@@ -689,6 +773,11 @@ body {
 
     color: #FCFAF6;
 }
+
+
+/* ================================
+   LINKS DO FOOTER
+================================ */
 
 .footer-link {
     font-family: "Montserrat", sans-serif;
@@ -705,19 +794,31 @@ body {
     transition: color 0.3s ease;
 }
 
+
 .footer-link:hover {
     color: #E3A9BC;
 }
 
+
+/* ================================
+   ME MANDE UM OI
+================================ */
+
 .footer-contact h3 {
     margin-bottom: 15px;
 }
+
 
 .footer-contact p {
     max-width: 310px;
 
     margin-bottom: 18px;
 }
+
+
+/* ================================
+   BOTÃO
+================================ */
 
 .footer-button {
     width: 100%;
@@ -747,10 +848,16 @@ body {
         color 0.3s ease;
 }
 
+
 .footer-button:hover {
     background-color: #3F3026;
     color: #FCFAF6;
 }
+
+
+/* ================================
+   COPYRIGHT
+================================ */
 
 .footer-copyright {
     width: 100%;
@@ -765,6 +872,11 @@ body {
 
     color: #3F3026;
 }
+
+
+/* ================================
+   TABLET
+================================ */
 
 @media (max-width: 1000px) {
 
@@ -782,12 +894,18 @@ body {
         column-gap: 40px;
     }
 
+
+    /* LOGO — linha inteira, em cima */
+
     .footer-content > .footer-brand {
         grid-column: 1 / 3;
         grid-row: 1;
 
         align-self: start;
     }
+
+
+    /* INFORMAÇÃO — coluna 1, linha 2 */
 
     .footer-content > .footer-column:nth-child(2) {
         grid-column: 1;
@@ -796,12 +914,18 @@ body {
         align-self: start;
     }
 
+
+    /* CONTATO — coluna 2, linha 2 */
+
     .footer-content > .footer-column:nth-child(3) {
         grid-column: 2;
         grid-row: 2;
 
         align-self: start;
     }
+
+
+    /* CATEGORIAS — coluna 1, linha 3 */
 
     .footer-content > .footer-column:nth-child(4) {
         grid-column: 1;
@@ -810,6 +934,9 @@ body {
         align-self: start;
     }
 
+
+    /* ME MANDE UM OI — coluna 2, linha 3 */
+
     .footer-content > .footer-contact {
         grid-column: 2;
         grid-row: 3;
@@ -817,14 +944,17 @@ body {
         align-self: start;
     }
 
+
     .footer-column h3 {
         font-size: 24px;
     }
+
 
     .footer-column p,
     .footer-link {
         font-size: 16px;
     }
+
 
     .footer-copyright {
         margin-top: 80px;
@@ -832,11 +962,17 @@ body {
     }
 }
 
+
+/* ================================
+   CELULAR
+================================ */
+
 @media (max-width: 600px) {
 
     .site-footer {
         padding: 55px 0 30px;
     }
+
 
     .footer-content {
         padding: 0 25px;
@@ -848,30 +984,46 @@ body {
         row-gap: 35px;
     }
 
+
+    /* LOGO — linha inteira, em cima */
+
     .footer-content > .footer-brand {
         grid-column: 1 / 3;
         grid-row: 1;
     }
+
+
+    /* INFORMAÇÃO — coluna 1, linha 2 */
 
     .footer-content > .footer-column:nth-child(2) {
         grid-column: 1;
         grid-row: 2;
     }
 
+
+    /* CONTATO — coluna 2, linha 2 */
+
     .footer-content > .footer-column:nth-child(3) {
         grid-column: 2;
         grid-row: 2;
     }
+
+
+    /* CATEGORIAS — coluna 1, linha 3 */
 
     .footer-content > .footer-column:nth-child(4) {
         grid-column: 1;
         grid-row: 3;
     }
 
+
+    /* ME MANDE UM OI — coluna 2, linha 3 */
+
     .footer-content > .footer-contact {
         grid-column: 2;
         grid-row: 3;
     }
+
 
     .footer-brand {
         align-items: center;
@@ -879,9 +1031,11 @@ body {
         text-align: center;
     }
 
+
     .footer-logo {
         font-size: 48px;
     }
+
 
     .footer-subtitle {
         font-size: 14px;
@@ -889,14 +1043,17 @@ body {
         white-space: normal;
     }
 
+
     .footer-instagram {
         justify-content: center;
     }
+
 
     .footer-instagram img {
         width: 170px;
         height: 170px;
     }
+
 
     .footer-column h3 {
         font-size: 24px;
@@ -904,12 +1061,14 @@ body {
         margin-bottom: 12px;
     }
 
+
     .footer-column p,
     .footer-link {
         font-size: 14px;
 
         line-height: 1.45;
     }
+
 
     .footer-button {
         max-width: 100%;
@@ -919,13 +1078,10 @@ body {
         font-size: 16px;
     }
 
+
     .footer-copyright {
         margin-top: 65px;
 
         font-size: 13px;
     }
-
-    .footer-logo-link {
-    text-decoration: none;
-}
 }

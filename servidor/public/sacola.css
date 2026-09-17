@@ -255,6 +255,15 @@ body {
 
 .sacola-item-info { flex: 1; }
 
+.sacola-item-nome-link {
+    text-decoration: none;
+    color: inherit;
+}
+
+.sacola-item-nome-link:hover .sacola-item-nome {
+    text-decoration: underline;
+}
+
 .sacola-item-nome {
     margin: 0 0 6px;
 
@@ -530,9 +539,6 @@ body {
 }
 
 .footer-link:hover { color: #E3A9BC; }
-.footer-logo-link {
-    text-decoration: none;
-}
 
 .footer-contact h3 { margin-bottom: 15px; }
 .footer-contact p { max-width: 310px; margin-bottom: 18px; }
@@ -642,4 +648,8 @@ body {
 @media (max-width: 480px) {
 
     .sacola-item { flex-wrap: wrap; }
+}
+.footer-logo-link {
+    text-decoration: none;
+    color: inherit;
 }

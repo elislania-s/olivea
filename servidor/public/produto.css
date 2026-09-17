@@ -517,6 +517,7 @@ body {
 
     background: transparent;
 
+    -moz-appearance: textfield;
 }
 
 .produto-qtd input::-webkit-outer-spin-button,
@@ -545,6 +546,104 @@ body {
     line-height: 1.6;
 
     color: #3F3026;
+}
+
+.produto-frete-bloco {
+    margin-top: 26px;
+    padding-top: 22px;
+    border-top: 1px solid rgba(63, 48, 38, 0.12);
+}
+
+.produto-frete-bloco h2 {
+    margin: 0 0 12px;
+
+    font-family: "Montserrat", sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+
+    color: #6B452C;
+}
+
+.produto-frete-linha {
+    display: flex;
+    gap: 10px;
+}
+
+.produto-frete-linha input {
+    flex: 1;
+    max-width: 180px;
+    height: 42px;
+    padding: 0 12px;
+    border: 1px solid rgba(63, 48, 38, 0.3);
+    font-family: "Montserrat", sans-serif;
+    font-size: 14px;
+}
+
+.produto-frete-linha button {
+    height: 42px;
+    padding: 0 18px;
+    border: 1px solid #3F3026;
+    background: transparent;
+    color: #3F3026;
+    font-family: "Montserrat", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.produto-frete-linha button:hover {
+    background-color: #3F3026;
+    color: #FCFAF6;
+}
+
+#freteResultado {
+    margin-top: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.frete-opcao {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid rgba(63, 48, 38, 0.2);
+    font-family: "Montserrat", sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.frete-opcao:hover {
+    border-color: #3F3026;
+}
+
+.frete-opcao.selecionada {
+    border-color: #3F3026;
+    background-color: rgba(63, 48, 38, 0.05);
+}
+
+.frete-opcao span.nome-servico {
+    flex: 1;
+    font-weight: 600;
+}
+
+.frete-opcao span.preco-servico {
+    font-weight: 700;
+}
+
+.frete-opcao-preview {
+    cursor: default;
+}
+
+.frete-opcao-preview:hover {
+    border-color: rgba(63, 48, 38, 0.2);
+}
+
+.frete-mensagem {
+    font-size: 13px;
+    color: rgba(63, 48, 38, 0.65);
 }
 
 .produto-selo {
@@ -856,10 +955,6 @@ body {
     color: #3F3026;
 }
 
-.footer-logo-link {
-    text-decoration: none;
-}
-
 .footer-logo-e { color: #FCFAF6; }
 
 .footer-subtitle {
@@ -1076,4 +1171,8 @@ body {
     }
 
     .produto-qtd { justify-content: center; }
+}
+.footer-logo-link {
+    text-decoration: none;
+    color: inherit;
 }

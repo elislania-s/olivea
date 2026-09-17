@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Olivea — Finalizar Pedido</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=Montserrat:wght@400;500&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="checkout.css">
+</head>
+
+<body>
+
+    <header class="site-header" id="topo">
+        <div class="header-inner">
+            <a href="index.html" class="brand" aria-label="Olivea - início">
+                <span class="brand-letter">O</span><span class="brand-letter">L</span>
+                <span class="brand-letter">I</span><span class="brand-letter">V</span>
+                <span class="brand-letter brand-e">E</span><span class="brand-letter">A</span>
+            </a>
+        </div>
+    </header>
+
+    <section class="checkout-secao">
+
+        <a href="sacola.html" class="checkout-voltar">← Voltar para a sacola</a>
+
+        <h1 class="checkout-titulo">Finalizar pedido</h1>
+
+        <div class="checkout-conteudo">
+
+            <form class="checkout-form" id="formCheckout">
+
+                <h2>Seus dados</h2>
+
+                <label class="checkout-campo">
+                    Nome completo
+                    <input type="text" id="nomeCompleto" required>
+                </label>
+
+                <div class="checkout-linha">
+                    <label class="checkout-campo">
+                        Email
+                        <input type="email" id="email" required>
+                    </label>
+
+                    <label class="checkout-campo">
+                        WhatsApp
+                        <input type="tel" id="whatsapp" placeholder="(71) 9 0000-0000" required>
+                    </label>
+                </div>
+
+                <h2>Endereço de entrega</h2>
+
+                <div class="checkout-linha">
+                    <label class="checkout-campo checkout-campo-cep">
+                        CEP
+                        <input type="text" id="cep" placeholder="00000-000" maxlength="9" required>
+                    </label>
+                    <span class="checkout-cep-status" id="cepStatus"></span>
+                </div>
+
+                <label class="checkout-campo">
+                    Rua
+                    <input type="text" id="rua" required>
+                </label>
+
+                <div class="checkout-linha">
+                    <label class="checkout-campo" style="flex: 0 0 120px;">
+                        Número
+                        <input type="text" id="numero" required>
+                    </label>
+
+                    <label class="checkout-campo">
+                        Complemento (opcional)
+                        <input type="text" id="complemento" placeholder="Apto, bloco...">
+                    </label>
+                </div>
+
+                <label class="checkout-campo">
+                    Bairro
+                    <input type="text" id="bairro" required>
+                </label>
+
+                <div class="checkout-linha">
+                    <label class="checkout-campo">
+                        Cidade
+                        <input type="text" id="cidade" required>
+                    </label>
+
+                    <label class="checkout-campo" style="flex: 0 0 100px;">
+                        Estado
+                        <input type="text" id="estado" maxlength="2" placeholder="BA" required>
+                    </label>
+                </div>
+
+                <h2>Frete</h2>
+                <div id="freteCheckoutResultado">
+                    <p class="checkout-frete-aviso">Preencha o CEP acima pra ver as opções de envio.</p>
+                </div>
+
+                <h2>Forma de pagamento</h2>
+                <div class="checkout-pagamento-opcoes">
+                    <label class="checkout-pagamento-opcao">
+                        <input type="radio" name="formaPagamento" value="mercadopago" checked>
+                        <span>Cartão de crédito ou débito</span>
+                    </label>
+                    <label class="checkout-pagamento-opcao">
+                        <input type="radio" name="formaPagamento" value="pix">
+                        <span>Pix</span>
+                    </label>
+                </div>
+
+                <div id="blocoPix" hidden>
+                    <!-- Preenchido via JS -->
+                </div>
+
+                <p class="checkout-mensagem" id="checkoutMensagem"></p>
+
+                <button type="submit" class="checkout-btn-continuar" id="btnContinuar">
+                    IR PARA O PAGAMENTO
+                </button>
+
+                <div class="checkout-selo">🔒 Seus dados são usados só para a entrega do pedido.</div>
+
+            </form>
+
+            <aside class="checkout-resumo" id="checkoutResumo">
+                <!-- Preenchido via JS -->
+            </aside>
+
+        </div>
+
+    </section>
+
+    <script src="carrinho.js"></script>
+    <script src="checkout.js"></script>
+
+</body>
+
+</html>

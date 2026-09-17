@@ -29,6 +29,9 @@ const { MercadoPagoConfig, Preference, Payment } = require("mercadopago");
 
 const { router: adminAuthRouter } = require("./admin-auth");
 const produtosRotas = require("./produtos-rotas");
+const freteRotas = require("./frete-rotas");
+const supabase = require("./db");
+const { enviarEmailNovoPedido } = require("./email");
 
 const app = express();
 
@@ -50,6 +53,7 @@ app.use(session({
 // Rotas de login do admin e de produtos (públicas + administrativas)
 app.use(adminAuthRouter);
 app.use(produtosRotas);
+app.use(freteRotas);
 
 // Serve o próprio site (tudo que estiver dentro da pasta "public/")
 // Assim o site e o servidor ficam na MESMA url — não precisa mais
@@ -80,13 +84,98 @@ const client = new MercadoPagoConfig({
    CRIAR A COBRANÇA (chamado pelo mercadopago.js do site)
 ================================================ */
 
+/* ================================================
+   PEDIDO VIA PIX DIRETO (sem Mercado Pago)
+
+   Registra o pedido como "aguardando confirmação
+   manual" — o Pix cai direto na sua conta, e você
+   confirma o pagamento manualmente ao receber o
+   comprovante pelo WhatsApp (não existe webhook
+   automático nesse caminho).
+================================================ */
+
+app.post("/api/criar-pedido-pix", async (req, res) => {
+
+    try {
+        const itensRecebidos = req.body.itens || [];
+        const cliente = req.body.cliente || {};
+        const frete = req.body.frete || null;
+
+        if (itensRecebidos.length === 0) {
+            return res.status(400).json({ erro: "Sacola vazia" });
+        }
+
+        const camposObrigatorios = [
+            "nomeCompleto", "email", "whatsapp",
+            "cep", "rua", "numero", "bairro", "cidade", "estado"
+        ];
+
+        for (const campo of camposObrigatorios) {
+            if (!cliente[campo] || !String(cliente[campo]).trim()) {
+                return res.status(400).json({ erro: "Preencha todos os campos obrigatórios do endereço." });
+            }
+        }
+
+        let total = itensRecebidos.reduce(
+            (soma, item) => soma + Number(item.preco) * Number(item.quantidade || 1),
+            0
+        );
+
+        if (frete && frete.preco > 0) {
+            total += Number(frete.preco);
+        }
+
+        const { data: pedido, error: erroPedido } = await supabase
+            .from("pedidos")
+            .insert({
+                nome_completo: cliente.nomeCompleto,
+                email: cliente.email,
+                whatsapp: cliente.whatsapp,
+                cep: cliente.cep,
+                rua: cliente.rua,
+                numero: cliente.numero,
+                complemento: cliente.complemento || "",
+                bairro: cliente.bairro,
+                cidade: cliente.cidade,
+                estado: cliente.estado,
+                itens: itensRecebidos,
+                total,
+                status: "aguardando_confirmacao_pix"
+            })
+            .select()
+            .single();
+
+        if (erroPedido) throw erroPedido;
+
+        res.json({ pedidoId: pedido.id });
+
+    } catch (erro) {
+        console.error("Erro ao criar pedido Pix:", erro);
+        res.status(500).json({ erro: "Erro ao registrar o pedido" });
+    }
+});
+
+
 app.post("/api/criar-preferencia", async (req, res) => {
 
     try {
         const itensRecebidos = req.body.itens || [];
+        const cliente = req.body.cliente || {};
+        const frete = req.body.frete || null;
 
         if (itensRecebidos.length === 0) {
             return res.status(400).json({ erro: "Sacola vazia" });
+        }
+
+        const camposObrigatorios = [
+            "nomeCompleto", "email", "whatsapp",
+            "cep", "rua", "numero", "bairro", "cidade", "estado"
+        ];
+
+        for (const campo of camposObrigatorios) {
+            if (!cliente[campo] || !String(cliente[campo]).trim()) {
+                return res.status(400).json({ erro: "Preencha todos os campos obrigatórios do endereço." });
+            }
         }
 
         const itens = itensRecebidos.map((item) => ({
@@ -96,16 +185,84 @@ app.post("/api/criar-preferencia", async (req, res) => {
             currency_id: "BRL"
         }));
 
-        // Como agora o site e o servidor são o MESMO endereço
-        // (o server.js está servindo a pasta public/), só existe
-        // uma URL pra tudo.
+        // Frete vira mais um "item" na cobrança, pra entrar no
+        // mesmo pagamento (o cliente paga tudo de uma vez só)
+        if (frete && frete.preco > 0) {
+            itens.push({
+                title: "Frete - " + (frete.servico || "Entrega"),
+                quantity: 1,
+                unit_price: Number(frete.preco),
+                currency_id: "BRL"
+            });
+        }
+
+        const total = itens.reduce((soma, item) => soma + item.unit_price * item.quantity, 0);
+
+        // 1) Grava o pedido no nosso banco, com status "pendente"
+        const { data: pedido, error: erroPedido } = await supabase
+            .from("pedidos")
+            .insert({
+                nome_completo: cliente.nomeCompleto,
+                email: cliente.email,
+                whatsapp: cliente.whatsapp,
+                cep: cliente.cep,
+                rua: cliente.rua,
+                numero: cliente.numero,
+                complemento: cliente.complemento || "",
+                bairro: cliente.bairro,
+                cidade: cliente.cidade,
+                estado: cliente.estado,
+                itens: itensRecebidos,
+                total,
+                status: "pendente"
+            })
+            .select()
+            .single();
+
+        if (erroPedido) throw erroPedido;
+
+        // 2) Cria a cobrança no Mercado Pago, já com os dados do
+        //    cliente (nome, email, telefone e endereço de entrega)
         const urlPublica = process.env.URL_PUBLICA;
 
+        const [ddd, ...restoNumero] = cliente.whatsapp.replace(/\D/g, "").length > 10
+            ? [cliente.whatsapp.replace(/\D/g, "").slice(0, 2), cliente.whatsapp.replace(/\D/g, "").slice(2)]
+            : ["", cliente.whatsapp.replace(/\D/g, "")];
+
         const preference = new Preference(client);
+
+        const formaPagamentoPreferida = req.body.formaPagamentoPreferida;
 
         const resultado = await preference.create({
             body: {
                 items: itens,
+
+                payer: {
+                    name: cliente.nomeCompleto,
+                    email: cliente.email,
+                    phone: {
+                        area_code: ddd,
+                        number: restoNumero.join("")
+                    },
+                    address: {
+                        zip_code: cliente.cep.replace(/\D/g, ""),
+                        street_name: cliente.rua,
+                        street_number: cliente.numero
+                    }
+                },
+
+                // Se o cliente já escolheu "Pix" no nosso checkout,
+                // pede pro Mercado Pago abrir direto na tela do Pix,
+                // sem precisar escolher de novo lá.
+                ...(formaPagamentoPreferida === "pix" ? {
+                    payment_methods: {
+                        default_payment_method_id: "pix"
+                    }
+                } : {}),
+
+                // Liga essa cobrança ao pedido salvo no nosso banco —
+                // é assim que o webhook vai saber qual pedido atualizar.
+                external_reference: pedido.id,
 
                 back_urls: {
                     success: urlPublica + "/pagamento-sucesso.html",
@@ -114,13 +271,15 @@ app.post("/api/criar-preferencia", async (req, res) => {
                 },
 
                 auto_return: "approved",
-
-                // Endereço que o Mercado Pago vai chamar avisando o
-                // status real do pagamento (mais confiável que só o
-                // back_url, que depende do cliente ser redirecionado).
                 notification_url: urlPublica + "/api/webhook-mercadopago"
             }
         });
+
+        // 3) Guarda o id da preferência no pedido, pra referência futura
+        await supabase
+            .from("pedidos")
+            .update({ preferencia_id: resultado.id })
+            .eq("id", pedido.id);
 
         res.json({ init_point: resultado.init_point });
 
@@ -153,12 +312,32 @@ app.post("/api/webhook-mercadopago", async (req, res) => {
                 "- valor:", pagamento.transaction_amount
             );
 
-            // AQUI é onde, futuramente, você conecta com:
-            // - envio de e-mail/WhatsApp de confirmação pro cliente
-            // - baixa de estoque
-            // - marcação do pedido como pago no seu banco de dados/planilha
-            //
-            // if (pagamento.status === "approved") { ... }
+            const pedidoId = pagamento.external_reference;
+
+            if (pedidoId) {
+
+                const statusPorPagamento = {
+                    approved: "aprovado",
+                    rejected: "recusado",
+                    cancelled: "recusado",
+                    refunded: "recusado",
+                    pending: "pendente",
+                    in_process: "pendente"
+                };
+
+                const novoStatus = statusPorPagamento[pagamento.status] || "pendente";
+
+                const { data: pedidoAtualizado } = await supabase
+                    .from("pedidos")
+                    .update({ status: novoStatus })
+                    .eq("id", pedidoId)
+                    .select()
+                    .single();
+
+                if (novoStatus === "aprovado" && pedidoAtualizado) {
+                    await enviarEmailNovoPedido(pedidoAtualizado);
+                }
+            }
         }
 
         // Responder 200 rápido é importante — o Mercado Pago

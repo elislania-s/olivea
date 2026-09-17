@@ -264,4 +264,67 @@ document.addEventListener("DOMContentLoaded", async function () {
         console.error("[Olivea] Erro na lupa/lightbox:", erro);
     }
 
+
+    // ============================================
+    // 6) CALCULAR FRETE (SuperFrete)
+    // ============================================
+
+    try {
+        const inputCep = document.getElementById("freteCep");
+        const btnCalcular = document.getElementById("btnCalcularFrete");
+        const resultado = document.getElementById("freteResultado");
+
+        inputCep.addEventListener("input", () => {
+            let valor = inputCep.value.replace(/\D/g, "").slice(0, 8);
+            if (valor.length > 5) valor = valor.slice(0, 5) + "-" + valor.slice(5);
+            inputCep.value = valor;
+        });
+
+        btnCalcular.addEventListener("click", async () => {
+
+            const cepLimpo = inputCep.value.replace(/\D/g, "");
+
+            if (cepLimpo.length !== 8) {
+                resultado.innerHTML = '<p class="frete-mensagem">Digite um CEP válido (8 números).</p>';
+                return;
+            }
+
+            resultado.innerHTML = '<p class="frete-mensagem">Calculando...</p>';
+            btnCalcular.disabled = true;
+
+            try {
+                const resposta = await fetch("/api/calcular-frete", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ produtoId: produto.id, cepDestino: cepLimpo })
+                });
+
+                const dados = await resposta.json();
+
+                if (!resposta.ok || !dados.opcoes || dados.opcoes.length === 0) {
+                    resultado.innerHTML = '<p class="frete-mensagem">Não encontramos opções de frete para esse CEP.</p>';
+                    return;
+                }
+
+                resultado.innerHTML = dados.opcoes.map((opcao) => `
+                    <div class="frete-opcao frete-opcao-preview">
+                        <span class="nome-servico">${opcao.servico}${opcao.nome ? " - " + opcao.nome : ""}
+                            ${opcao.prazoDias ? ` (até ${opcao.prazoDias} dias úteis)` : ""}
+                        </span>
+                        <span class="preco-servico">R$ ${opcao.preco.toFixed(2).replace(".", ",")}</span>
+                    </div>
+                `).join("") + '<p class="frete-mensagem" style="margin-top:8px;">Você escolhe a opção de envio na hora de fechar o pedido, no checkout.</p>';
+
+            } catch (erro) {
+                console.error("[Olivea] Erro ao calcular frete:", erro);
+                resultado.innerHTML = '<p class="frete-mensagem">Erro ao calcular o frete. Tente novamente.</p>';
+            } finally {
+                btnCalcular.disabled = false;
+            }
+        });
+
+    } catch (erro) {
+        console.error("[Olivea] Erro no bloco de frete:", erro);
+    }
+
 });

@@ -740,7 +740,7 @@ body {
 }
 
 
-/* CATEGORIAS — coluna 2, linha 2 (embaixo de INFORMAÇÃO) */
+/* CATEGORIAS — coluna 2, linha 2 */
 
 .footer-content > .footer-column:nth-child(4) {
     grid-column: 2;
@@ -748,7 +748,7 @@ body {
 }
 
 
-/* ME MANDE UM OI — coluna 3, linha 2 (embaixo de CONTATO) */
+/* ME MANDE UM OI — coluna 3, linha 2 */
 
 .footer-content > .footer-contact {
     grid-column: 3;
@@ -769,6 +769,21 @@ body {
 }
 
 
+/* REMOVE QUALQUER SUBLINHADO DA LOGO */
+
+.footer-logo-link {
+    text-decoration: none !important;
+    color: inherit;
+
+    border: none !important;
+    box-shadow: none !important;
+
+    display: inline-block;
+}
+
+
+/* LOGO */
+
 .footer-logo {
     display: flex;
     align-items: center;
@@ -779,6 +794,19 @@ body {
     line-height: 1;
 
     color: #3F3026;
+
+    text-decoration: none !important;
+}
+
+
+/* Remove qualquer linha criada por pseudo-elementos */
+
+.footer-logo-link::before,
+.footer-logo-link::after,
+.footer-logo::before,
+.footer-logo::after {
+    display: none !important;
+    content: none !important;
 }
 
 
@@ -863,9 +891,7 @@ body {
 
 
 /* ================================
-   LINKS DO FOOTER (Informação e
-   Categorias) — são clicáveis,
-   por isso ganham sublinhado sutil
+   LINKS DO FOOTER
 ================================ */
 
 .footer-link {
@@ -882,6 +908,7 @@ body {
 
     transition: color 0.3s ease;
 }
+
 
 .footer-link:hover {
     color: #E3A9BC;
@@ -964,12 +991,6 @@ body {
 
 /* ================================
    TABLET
-
-   Nas telas menores voltamos ao
-   fluxo natural (grid-column/row
-   automático), já que o grid de
-   3 colunas x 2 linhas só faz
-   sentido no desktop.
 ================================ */
 
 @media (max-width: 1000px) {
@@ -988,7 +1009,9 @@ body {
         column-gap: 40px;
     }
 
+
     /* LOGO — linha inteira, em cima */
+
     .footer-content > .footer-brand {
         grid-column: 1 / 3;
         grid-row: 1;
@@ -996,7 +1019,9 @@ body {
         align-self: start;
     }
 
+
     /* INFORMAÇÃO — coluna 1, linha 2 */
+
     .footer-content > .footer-column:nth-child(2) {
         grid-column: 1;
         grid-row: 2;
@@ -1004,7 +1029,9 @@ body {
         align-self: start;
     }
 
+
     /* CONTATO — coluna 2, linha 2 */
+
     .footer-content > .footer-column:nth-child(3) {
         grid-column: 2;
         grid-row: 2;
@@ -1012,7 +1039,9 @@ body {
         align-self: start;
     }
 
+
     /* CATEGORIAS — coluna 1, linha 3 */
+
     .footer-content > .footer-column:nth-child(4) {
         grid-column: 1;
         grid-row: 3;
@@ -1020,7 +1049,9 @@ body {
         align-self: start;
     }
 
+
     /* ME MANDE UM OI — coluna 2, linha 3 */
+
     .footer-content > .footer-contact {
         grid-column: 2;
         grid-row: 3;
@@ -1028,14 +1059,17 @@ body {
         align-self: start;
     }
 
+
     .footer-column h3 {
         font-size: 24px;
     }
+
 
     .footer-column p,
     .footer-link {
         font-size: 16px;
     }
+
 
     .footer-copyright {
         margin-top: 80px;
@@ -1065,31 +1099,41 @@ body {
         row-gap: 35px;
     }
 
+
     /* LOGO — linha inteira, em cima */
+
     .footer-content > .footer-brand {
         grid-column: 1 / 3;
         grid-row: 1;
     }
 
+
     /* INFORMAÇÃO — coluna 1, linha 2 */
+
     .footer-content > .footer-column:nth-child(2) {
         grid-column: 1;
         grid-row: 2;
     }
 
+
     /* CONTATO — coluna 2, linha 2 */
+
     .footer-content > .footer-column:nth-child(3) {
         grid-column: 2;
         grid-row: 2;
     }
 
+
     /* CATEGORIAS — coluna 1, linha 3 */
+
     .footer-content > .footer-column:nth-child(4) {
         grid-column: 1;
         grid-row: 3;
     }
 
+
     /* ME MANDE UM OI — coluna 2, linha 3 */
+
     .footer-content > .footer-contact {
         grid-column: 2;
         grid-row: 3;
@@ -1155,7 +1199,4 @@ body {
 
         font-size: 13px;
     }
-    .footer-logo-link {
-    text-decoration: none;
-}
 }

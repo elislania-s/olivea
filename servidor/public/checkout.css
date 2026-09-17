@@ -1,0 +1,272 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #F6F0E5;
+    color: #3F3026;
+    font-family: "Montserrat", sans-serif;
+}
+
+.site-header {
+    background-color: #F6F0E5;
+    padding: 20px 0;
+    text-align: center;
+}
+
+.brand {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    font-family: "Cormorant Garamond", serif;
+    font-size: 40px;
+    font-weight: 600;
+    color: #3F3026;
+}
+
+.brand-e {
+    color: #71806C;
+}
+
+.checkout-secao {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 20px 24px 100px;
+}
+
+.checkout-voltar {
+    display: inline-block;
+    margin-bottom: 20px;
+    font-size: 14px;
+    color: rgba(63, 48, 38, 0.6);
+    text-decoration: none;
+}
+
+.checkout-voltar:hover {
+    color: #3F3026;
+}
+
+.checkout-titulo {
+    font-family: "Cormorant Garamond", serif;
+    font-size: 36px;
+    font-weight: 600;
+    color: #6B452C;
+    margin-bottom: 28px;
+}
+
+.checkout-conteudo {
+    display: flex;
+    align-items: flex-start;
+    gap: 40px;
+}
+
+.checkout-form {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.checkout-form h2 {
+    font-family: "Cormorant Garamond", serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: #6B452C;
+    margin-top: 10px;
+}
+
+.checkout-linha {
+    display: flex;
+    gap: 14px;
+    align-items: flex-end;
+}
+
+.checkout-linha .checkout-campo {
+    flex: 1;
+}
+
+.checkout-campo {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.checkout-campo input {
+    height: 44px;
+    padding: 0 12px;
+    border: 1px solid rgba(63, 48, 38, 0.3);
+    font-family: "Montserrat", sans-serif;
+    font-size: 14px;
+    background: #FCFAF6;
+}
+
+.checkout-campo input:focus {
+    outline: none;
+    border-color: #3F3026;
+}
+
+.checkout-campo-cep {
+    max-width: 200px;
+}
+
+.checkout-cep-status {
+    font-size: 12px;
+    color: rgba(63, 48, 38, 0.65);
+    padding-bottom: 12px;
+}
+
+.checkout-cep-status.erro {
+    color: #B65C4A;
+}
+
+.checkout-mensagem {
+    font-size: 13px;
+    color: #B65C4A;
+    min-height: 18px;
+}
+
+.checkout-btn-continuar {
+    height: 50px;
+    border: none;
+    background-color: #3F3026;
+    color: #FCFAF6;
+    font-family: "Montserrat", sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 8px;
+}
+
+.checkout-btn-continuar:hover {
+    opacity: 0.9;
+}
+
+.checkout-btn-continuar:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.checkout-selo {
+    font-size: 12px;
+    color: rgba(63, 48, 38, 0.6);
+    text-align: center;
+}
+
+.checkout-resumo {
+    width: 320px;
+    flex-shrink: 0;
+    background-color: #FCFAF6;
+    border: 1px solid rgba(63, 48, 38, 0.15);
+    padding: 24px;
+}
+
+.checkout-resumo h2 {
+    font-family: "Cormorant Garamond", serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: #6B452C;
+    margin-bottom: 16px;
+}
+
+.checkout-resumo-item {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 13px;
+    margin-bottom: 10px;
+    color: #3F3026;
+}
+
+.checkout-resumo-total {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(63, 48, 38, 0.15);
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.checkout-frete-aviso {
+    font-size: 13px;
+    color: rgba(63, 48, 38, 0.65);
+}
+
+.frete-opcao {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border: 1px solid rgba(63, 48, 38, 0.25);
+    font-size: 13px;
+    cursor: pointer;
+    margin-bottom: 8px;
+}
+
+.frete-opcao:hover {
+    border-color: #3F3026;
+}
+
+.frete-opcao.selecionada {
+    border-color: #3F3026;
+    background-color: rgba(63, 48, 38, 0.05);
+}
+
+.frete-opcao .nome-servico {
+    flex: 1;
+    font-weight: 600;
+}
+
+.frete-opcao .preco-servico {
+    font-weight: 700;
+}
+
+.checkout-pagamento-opcoes {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 6px;
+}
+
+.checkout-pagamento-opcao {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px;
+    border: 1px solid rgba(63, 48, 38, 0.25);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.checkout-pagamento-opcao:has(input:checked) {
+    border-color: #3F3026;
+    background-color: rgba(63, 48, 38, 0.05);
+}
+
+@media (max-width: 800px) {
+    .checkout-conteudo {
+        flex-direction: column-reverse;
+    }
+    .checkout-resumo {
+        width: 100%;
+    }
+    .checkout-linha {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .checkout-campo-cep {
+        max-width: 100%;
+    }
+    .checkout-pagamento-opcoes {
+        flex-direction: column;
+    }
+}
+.footer-logo-link {
+    text-decoration: none;
+    color: inherit;
+}

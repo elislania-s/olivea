@@ -20,7 +20,9 @@ function sacolaRenderizar() {
             </div>
 
             <div class="sacola-item-info">
-                <h3 class="sacola-item-nome">${item.nome}</h3>
+                <a href="produto.html?id=${item.id}" class="sacola-item-nome-link">
+                    <h3 class="sacola-item-nome">${item.nome}</h3>
+                </a>
                 <span class="sacola-item-preco">
                     R$ ${item.preco.toFixed(2).replace(".", ",")}
                 </span>
@@ -38,7 +40,6 @@ function sacolaRenderizar() {
     `).join("");
 
     const total = oliveaTotalSacola();
-    const freteGratis = total >= 100;
 
     wrapper.innerHTML = `
         <div class="sacola-conteudo">
@@ -58,7 +59,7 @@ function sacolaRenderizar() {
 
                 <div class="sacola-resumo-linha">
                     <span>Frete</span>
-                    <span>${freteGratis ? "Grátis" : "Calculado no Mercado Pago"}</span>
+                    <span>Calculado no checkout</span>
                 </div>
 
                 <div class="sacola-resumo-total">
@@ -66,9 +67,9 @@ function sacolaRenderizar() {
                     <span>R$ ${total.toFixed(2).replace(".", ",")}</span>
                 </div>
 
-                <button type="button" class="btn-finalizar-compra" id="btnFinalizarCompra">
+                <a href="checkout.html" class="btn-finalizar-compra" id="btnFinalizarCompra">
                     🔒 FINALIZAR COMPRA
-                </button>
+                </a>
 
                 <div class="sacola-seguranca">
                     Pagamento processado com segurança pelo Mercado Pago
@@ -104,3 +105,8 @@ function sacolaRenderizar() {
 }
 
 document.addEventListener("DOMContentLoaded", sacolaRenderizar);
+
+// "pageshow" dispara também quando a página volta do cache do
+// navegador (botão voltar) — sem isso, o botão "voltar" às vezes
+// mostra uma versão congelada de antes, sem os itens atualizados.
+window.addEventListener("pageshow", sacolaRenderizar);

@@ -128,7 +128,7 @@ function criarCardDestaque(produto) {
 
     return `
         <article class="product-card">
-            <a href="produto.html?id=${produto.id}" class="product-link">
+            <a href="produto.html?id=${produto.id}" class="product-link" style="width:100%;">
                 <div class="product-image-box">
                     <img src="${imagens[0]}" alt="${produto.nome}" class="product-image">
                     <div class="product-dots">${montarDots(imagens)}</div>

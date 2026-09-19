@@ -59,6 +59,8 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     const imagemPrincipal = document.getElementById("produtoImagemPrincipal");
     const thumbsContainer = document.getElementById("produtoThumbs");
+    let indiceImagemAtual = 0;
+    let houveSwipeRecente = false;
 
     try {
         if (imagemPrincipal && thumbsContainer && produto.imagens && produto.imagens.length) {
@@ -66,23 +68,54 @@ document.addEventListener("DOMContentLoaded", async function () {
             imagemPrincipal.src = produto.imagens[0];
             imagemPrincipal.alt = produto.nome;
 
+            function irParaImagem(index) {
+                const total = produto.imagens.length;
+                index = ((index % total) + total) % total; // sempre dentro do intervalo
+
+                indiceImagemAtual = index;
+                imagemPrincipal.src = produto.imagens[index];
+
+                thumbsContainer.querySelectorAll(".dot").forEach((d, i) => {
+                    d.classList.toggle("active", i === index);
+                });
+            }
+
             produto.imagens.forEach((imagem, index) => {
                 const dot = document.createElement("button");
                 dot.type = "button";
                 dot.className = "dot" + (index === 0 ? " active" : "");
                 dot.setAttribute("aria-label", "Imagem " + (index + 1));
 
-                dot.addEventListener("click", () => {
-                    imagemPrincipal.src = imagem;
-
-                    thumbsContainer.querySelectorAll(".dot").forEach((d) => {
-                        d.classList.remove("active");
-                    });
-                    dot.classList.add("active");
-                });
+                dot.addEventListener("click", () => irParaImagem(index));
 
                 thumbsContainer.appendChild(dot);
             });
+
+            // Deslizar (swipe) no celular também troca a imagem
+            const zoomBoxSwipe = document.getElementById("produtoZoomBox");
+
+            if (zoomBoxSwipe && produto.imagens.length > 1) {
+
+                let toqueInicioX = 0;
+                let toqueDeltaX = 0;
+                const LIMITE_SWIPE = 35;
+
+                zoomBoxSwipe.addEventListener("touchstart", (evento) => {
+                    toqueInicioX = evento.touches[0].clientX;
+                    toqueDeltaX = 0;
+                }, { passive: true });
+
+                zoomBoxSwipe.addEventListener("touchmove", (evento) => {
+                    toqueDeltaX = evento.touches[0].clientX - toqueInicioX;
+                }, { passive: true });
+
+                zoomBoxSwipe.addEventListener("touchend", () => {
+                    if (Math.abs(toqueDeltaX) > LIMITE_SWIPE) {
+                        irParaImagem(indiceImagemAtual + (toqueDeltaX < 0 ? 1 : -1));
+                        houveSwipeRecente = true;
+                    }
+                });
+            }
         }
     } catch (erro) {
         console.error("[Olivea] Erro ao montar a galeria:", erro);
@@ -223,6 +256,11 @@ document.addEventListener("DOMContentLoaded", async function () {
             }
 
             zoomBox.addEventListener("click", () => {
+                if (houveSwipeRecente) {
+                    houveSwipeRecente = false;
+                    return;
+                }
+
                 lightboxImg.src = imagemPrincipal.src;
                 lightboxImg.alt = imagemPrincipal.alt;
                 lightboxImg.classList.remove("is-zoomed");

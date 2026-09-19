@@ -54,7 +54,7 @@ body {
     font-family: "Cormorant Garamond", serif;
     font-size: 64px;
     font-weight: 600;
-    line-height: 1;
+    line-height: 1.15;
 
     color: #3F3026;
 }
@@ -166,6 +166,7 @@ body {
         overflow-x: auto;
         max-width: calc(100% - 50px);
         scrollbar-width: none;
+        padding: 0 3px;
     }
 
     .main-nav::-webkit-scrollbar { display: none; }

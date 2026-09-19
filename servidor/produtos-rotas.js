@@ -16,6 +16,7 @@
 
 const express = require("express");
 const multer = require("multer");
+const sharp = require("sharp");
 const supabase = require("./db");
 const { exigirLogin } = require("./admin-auth");
 
@@ -219,12 +220,25 @@ router.post("/api/admin/upload-imagem", upload.single("imagem"), async (req, res
             return res.status(400).json({ erro: "Nenhuma imagem enviada" });
         }
 
-        const nomeArquivo = `${Date.now()}-${req.file.originalname}`.replace(/\s+/g, "-");
+        // Redimensiona/comprime automaticamente — fotos de celular ou
+        // exportadas de editores de imagem às vezes vêm enormes
+        // (ex: resolução de impressão), e isso quebra o upload sem
+        // necessidade. Limitamos a 1600px de largura, sem esticar
+        // fotos menores, e convertemos pra um formato mais leve.
+        const ehPng = req.file.mimetype === "image/png";
+
+        const imagemProcessada = await sharp(req.file.buffer)
+            .resize({ width: 1600, withoutEnlargement: true })
+            .toFormat(ehPng ? "png" : "jpeg", { quality: 85 })
+            .toBuffer();
+
+        const extensao = ehPng ? "png" : "jpg";
+        const nomeArquivo = `${Date.now()}-${Math.round(Math.random() * 1e6)}.${extensao}`;
 
         const { error: erroUpload } = await supabase.storage
             .from("produtos-fotos")
-            .upload(nomeArquivo, req.file.buffer, {
-                contentType: req.file.mimetype
+            .upload(nomeArquivo, imagemProcessada, {
+                contentType: ehPng ? "image/png" : "image/jpeg"
             });
 
         if (erroUpload) throw erroUpload;
@@ -237,7 +251,10 @@ router.post("/api/admin/upload-imagem", upload.single("imagem"), async (req, res
 
     } catch (erro) {
         console.error("Erro no upload da imagem:", erro);
-        res.status(500).json({ erro: "Erro ao subir a imagem" });
+        res.status(500).json({
+            erro: "Erro ao subir a imagem",
+            detalhe: erro.message || String(erro)
+        });
     }
 });
 

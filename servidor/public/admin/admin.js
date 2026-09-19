@@ -251,14 +251,17 @@ function iniciarPainel() {
                     body: formData
                 });
 
-                if (!resposta.ok) throw new Error("Falha no upload");
+                if (!resposta.ok) {
+                    const dadosErro = await resposta.json().catch(() => ({}));
+                    throw new Error(dadosErro.detalhe || dadosErro.erro || "Falha no upload");
+                }
 
                 const dados = await resposta.json();
                 fotosDoFormulario.push(dados.url);
                 renderizarFotosPreview();
 
             } catch (erro) {
-                mensagem.textContent = "Erro ao enviar uma das fotos.";
+                mensagem.textContent = "Erro ao enviar uma das fotos: " + erro.message;
                 mensagem.className = "admin-mensagem erro";
             }
         }
@@ -392,7 +395,10 @@ function iniciarPainel() {
                 body: formData
             });
 
-            if (!resposta.ok) throw new Error("Falha no upload");
+            if (!resposta.ok) {
+                const dadosErro = await resposta.json().catch(() => ({}));
+                throw new Error(dadosErro.detalhe || dadosErro.erro || "Falha no upload");
+            }
 
             const dados = await resposta.json();
             bannerUrlAtual = dados.url;
@@ -404,7 +410,7 @@ function iniciarPainel() {
             mensagem.textContent = "Banner enviado — clique em Salvar para confirmar.";
 
         } catch (erro) {
-            mensagem.textContent = "Erro ao enviar o banner.";
+            mensagem.textContent = "Erro ao enviar o banner: " + erro.message;
             mensagem.className = "admin-mensagem erro";
         }
     });

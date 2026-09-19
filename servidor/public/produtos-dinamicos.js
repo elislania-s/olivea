@@ -103,6 +103,57 @@ function montarDots(imagens) {
     `).join("");
 }
 
+// Caixinha de imagem com proporção travada por matemática (padding
+// em %), não pelo "aspect-ratio" do CSS — esse último tem
+// comportamento inconsistente em alguns Safari/iOS, e foi a causa
+// dos cards ficando de tamanhos diferentes no celular.
+function montarCaixaImagem(imagens, nomeProduto, proporcaoAlturaLargura) {
+    return `
+        <div class="product-image-box" style="
+            position: relative;
+            width: 100%;
+            height: 0;
+            padding-bottom: ${proporcaoAlturaLargura}%;
+            overflow: hidden;
+            background-color: transparent;
+        ">
+            <img src="${imagens[0]}" alt="${nomeProduto}" class="product-image" style="
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 68%;
+                height: 81%;
+                object-fit: contain;
+            ">
+            <div class="product-dots" style="
+                position: absolute;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                display: flex;
+                align-items: center;
+                gap: 5px;
+            ">${montarDots(imagens)}</div>
+        </div>
+    `;
+}
+
+// Título com altura travada em 2 linhas — não importa o quão
+// grande o nome do produto seja, o botão "Comprar" sempre fica na
+// mesma posição em todos os cards da fileira.
+function montarTitulo(nome, tag) {
+    return `
+        <${tag} style="
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            min-height: 2.3em;
+        ">${nome}</${tag}>
+    `;
+}
+
 function criarCardColecao(produto) {
 
     const imagens = (produto.imagens && produto.imagens.length) ? produto.imagens : [""];
@@ -110,11 +161,8 @@ function criarCardColecao(produto) {
     return `
         <article class="product-card" data-category="${produto.categoria}" data-price="${produto.preco}">
             <a href="produto.html?id=${produto.id}" style="text-decoration:none; color:inherit; display:block; width:100%;">
-                <div class="product-image-box">
-                    <img src="${imagens[0]}" alt="${produto.nome}" class="product-image">
-                    <div class="product-dots">${montarDots(imagens)}</div>
-                </div>
-                <h3>${produto.nome}</h3>
+                ${montarCaixaImagem(imagens, produto.nome, 99.375)}
+                ${montarTitulo(produto.nome, "h3")}
                 <p class="product-price">R$ ${Number(produto.preco).toFixed(2).replace(".", ",")}</p>
             </a>
             <a href="produto.html?id=${produto.id}" class="buy-button">COMPRAR</a>
@@ -129,11 +177,8 @@ function criarCardDestaque(produto) {
     return `
         <article class="product-card">
             <a href="produto.html?id=${produto.id}" class="product-link" style="width:100%;">
-                <div class="product-image-box">
-                    <img src="${imagens[0]}" alt="${produto.nome}" class="product-image">
-                    <div class="product-dots">${montarDots(imagens)}</div>
-                </div>
-                <h3>${produto.nome.toUpperCase()}</h3>
+                ${montarCaixaImagem(imagens, produto.nome, 105.17)}
+                ${montarTitulo(produto.nome.toUpperCase(), "h3")}
                 <p class="product-price">R$ ${Number(produto.preco).toFixed(2).replace(".", ",")}</p>
             </a>
         </article>

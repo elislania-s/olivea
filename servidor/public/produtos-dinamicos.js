@@ -107,9 +107,16 @@ function montarDots(imagens) {
 // em %), não pelo "aspect-ratio" do CSS — esse último tem
 // comportamento inconsistente em alguns Safari/iOS, e foi a causa
 // dos cards ficando de tamanhos diferentes no celular.
+//
+// Navegação por SETAS laterais (não bolinhas): mais clara em
+// qualquer tamanho de tela, e continua funcionando com arrastar
+// (swipe) no celular e passar o mouse no desktop.
 function montarCaixaImagem(imagens, nomeProduto, proporcaoAlturaLargura) {
+
+    const temVariasFotos = imagens.length > 1;
+
     return `
-        <div class="product-image-box" style="
+        <div class="product-image-box" data-imagens='${JSON.stringify(imagens)}' style="
             position: relative;
             width: 100%;
             height: 0;
@@ -126,23 +133,40 @@ function montarCaixaImagem(imagens, nomeProduto, proporcaoAlturaLargura) {
                 height: 81%;
                 object-fit: contain;
             ">
-            <div class="product-dots" style="
-                position: absolute;
-                bottom: 20px;
-                left: 50%;
-                transform: translateX(-50%);
-                display: flex;
-                align-items: center;
-                gap: 5px;
-            ">${montarDots(imagens)}</div>
+            ${temVariasFotos ? `
+                <button type="button" class="seta-imagem seta-imagem-esquerda" aria-label="Foto anterior" style="${estiloSeta("left")}">‹</button>
+                <button type="button" class="seta-imagem seta-imagem-direita" aria-label="Próxima foto" style="${estiloSeta("right")}">›</button>
+            ` : ""}
         </div>
+    `;
+}
+
+function estiloSeta(lado) {
+    return `
+        position: absolute;
+        top: 50%;
+        ${lado}: 8px;
+        transform: translateY(-50%);
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        border: none;
+        background-color: rgba(252, 250, 246, 0.85);
+        color: #3F3026;
+        font-size: 20px;
+        line-height: 1;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
     `;
 }
 
 // Título com altura travada em 2 linhas — não importa o quão
 // grande o nome do produto seja, o botão "Comprar" sempre fica na
 // mesma posição em todos os cards da fileira.
-function montarTitulo(nome, tag) {
+function montarTitulo(nome, tag, centralizado) {
     return `
         <${tag} style="
             display: -webkit-box;
@@ -150,6 +174,7 @@ function montarTitulo(nome, tag) {
             -webkit-box-orient: vertical;
             overflow: hidden;
             min-height: 2.3em;
+            ${centralizado ? "text-align: center;" : ""}
         ">${nome}</${tag}>
     `;
 }
@@ -162,7 +187,7 @@ function criarCardColecao(produto) {
         <article class="product-card" data-category="${produto.categoria}" data-price="${produto.preco}">
             <a href="produto.html?id=${produto.id}" style="text-decoration:none; color:inherit; display:block; width:100%;">
                 ${montarCaixaImagem(imagens, produto.nome, 99.375)}
-                ${montarTitulo(produto.nome, "h3")}
+                ${montarTitulo(produto.nome, "h3", false)}
                 <p class="product-price">R$ ${Number(produto.preco).toFixed(2).replace(".", ",")}</p>
             </a>
             <a href="produto.html?id=${produto.id}" class="buy-button">COMPRAR</a>
@@ -175,11 +200,11 @@ function criarCardDestaque(produto) {
     const imagens = (produto.imagens && produto.imagens.length) ? produto.imagens : [""];
 
     return `
-        <article class="product-card">
+        <article class="product-card" style="text-align: center;">
             <a href="produto.html?id=${produto.id}" class="product-link" style="width:100%;">
                 ${montarCaixaImagem(imagens, produto.nome, 105.17)}
-                ${montarTitulo(produto.nome.toUpperCase(), "h3")}
-                <p class="product-price">R$ ${Number(produto.preco).toFixed(2).replace(".", ",")}</p>
+                ${montarTitulo(produto.nome.toUpperCase(), "h3", true)}
+                <p class="product-price" style="text-align:center;">R$ ${Number(produto.preco).toFixed(2).replace(".", ",")}</p>
             </a>
         </article>
     `;
@@ -198,20 +223,26 @@ function inicializarInteracaoCards(container) {
 
         const box = card.querySelector(".product-image-box");
         const image = card.querySelector(".product-image");
-        const dots = Array.from(card.querySelectorAll(".dot"));
-        const imagens = dots.map((dot) => dot.dataset.image);
 
-        if (!box || !image || dots.length === 0) return;
+        if (!box || !image) return;
+
+        let imagens = [];
+        try {
+            imagens = JSON.parse(box.dataset.imagens || "[]");
+        } catch (erro) {
+            imagens = [];
+        }
+
+        if (imagens.length === 0) return;
 
         let indiceAtual = 0;
 
-        function marcarDotAtivo(index) {
-            dots.forEach((dot, i) => dot.classList.toggle("active", i === index));
-        }
-
         function trocarImagem(index, { instantaneo = false } = {}) {
 
-            if (index === indiceAtual || index < 0 || index >= imagens.length) return;
+            const total = imagens.length;
+            index = ((index % total) + total) % total;
+
+            if (index === indiceAtual) return;
 
             indiceAtual = index;
 
@@ -227,29 +258,43 @@ function inicializarInteracaoCards(container) {
                     image.style.opacity = "1";
                 }, 90);
             }
-
-            marcarDotAtivo(indiceAtual);
         }
 
-        dots.forEach((dot, index) => {
-            dot.addEventListener("click", (evento) => {
+        // Setas laterais (funcionam em qualquer tamanho de tela)
+        const setaEsquerda = box.querySelector(".seta-imagem-esquerda");
+        const setaDireita = box.querySelector(".seta-imagem-direita");
+
+        if (setaEsquerda) {
+            setaEsquerda.addEventListener("click", (evento) => {
                 evento.preventDefault();
                 evento.stopPropagation();
+                trocarImagem(indiceAtual - 1);
+            });
+        }
+
+        if (setaDireita) {
+            setaDireita.addEventListener("click", (evento) => {
+                evento.preventDefault();
+                evento.stopPropagation();
+                trocarImagem(indiceAtual + 1);
+            });
+        }
+
+        // Bônus no desktop: passar o mouse também troca a imagem
+        if (imagens.length > 1) {
+            box.addEventListener("mousemove", (evento) => {
+                const rect = box.getBoundingClientRect();
+                const relativeX = evento.clientX - rect.left;
+                const sliceWidth = rect.width / imagens.length;
+                let index = Math.floor(relativeX / sliceWidth);
+                index = Math.max(0, Math.min(imagens.length - 1, index));
                 trocarImagem(index);
             });
-        });
 
-        box.addEventListener("mousemove", (evento) => {
-            const rect = box.getBoundingClientRect();
-            const relativeX = evento.clientX - rect.left;
-            const sliceWidth = rect.width / imagens.length;
-            let index = Math.floor(relativeX / sliceWidth);
-            index = Math.max(0, Math.min(imagens.length - 1, index));
-            trocarImagem(index);
-        });
+            box.addEventListener("mouseleave", () => trocarImagem(0));
+        }
 
-        box.addEventListener("mouseleave", () => trocarImagem(0));
-
+        // Continua funcionando arrastar (swipe) no celular
         let touchStartX = 0;
         let touchDeltaX = 0;
         const SWIPE_THRESHOLD = 35;
@@ -265,11 +310,7 @@ function inicializarInteracaoCards(container) {
 
         box.addEventListener("touchend", () => {
             if (Math.abs(touchDeltaX) > SWIPE_THRESHOLD) {
-                if (touchDeltaX < 0) {
-                    trocarImagem((indiceAtual + 1) % imagens.length, { instantaneo: true });
-                } else {
-                    trocarImagem((indiceAtual - 1 + imagens.length) % imagens.length, { instantaneo: true });
-                }
+                trocarImagem(indiceAtual + (touchDeltaX < 0 ? 1 : -1), { instantaneo: true });
             }
         });
     });

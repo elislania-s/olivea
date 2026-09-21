@@ -58,12 +58,11 @@ document.addEventListener("DOMContentLoaded", async function () {
     // ============================================
 
     const imagemPrincipal = document.getElementById("produtoImagemPrincipal");
-    const thumbsContainer = document.getElementById("produtoThumbs");
     let indiceImagemAtual = 0;
     let houveSwipeRecente = false;
 
     try {
-        if (imagemPrincipal && thumbsContainer && produto.imagens && produto.imagens.length) {
+        if (imagemPrincipal && produto.imagens && produto.imagens.length) {
 
             imagemPrincipal.src = produto.imagens[0];
             imagemPrincipal.alt = produto.nome;
@@ -74,22 +73,24 @@ document.addEventListener("DOMContentLoaded", async function () {
 
                 indiceImagemAtual = index;
                 imagemPrincipal.src = produto.imagens[index];
-
-                thumbsContainer.querySelectorAll(".dot").forEach((d, i) => {
-                    d.classList.toggle("active", i === index);
-                });
             }
 
-            produto.imagens.forEach((imagem, index) => {
-                const dot = document.createElement("button");
-                dot.type = "button";
-                dot.className = "dot" + (index === 0 ? " active" : "");
-                dot.setAttribute("aria-label", "Imagem " + (index + 1));
+            // Setas laterais (aparecem só se tiver mais de 1 foto)
+            const setaEsquerda = document.getElementById("produtoSetaEsquerda");
+            const setaDireita = document.getElementById("produtoSetaDireita");
 
-                dot.addEventListener("click", () => irParaImagem(index));
+            if (produto.imagens.length > 1) {
 
-                thumbsContainer.appendChild(dot);
-            });
+                if (setaEsquerda) {
+                    setaEsquerda.hidden = false;
+                    setaEsquerda.addEventListener("click", () => irParaImagem(indiceImagemAtual - 1));
+                }
+
+                if (setaDireita) {
+                    setaDireita.hidden = false;
+                    setaDireita.addEventListener("click", () => irParaImagem(indiceImagemAtual + 1));
+                }
+            }
 
             // Deslizar (swipe) no celular também troca a imagem
             const zoomBoxSwipe = document.getElementById("produtoZoomBox");

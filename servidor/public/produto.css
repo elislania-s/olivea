@@ -403,35 +403,44 @@ body.produto-pronto .produto-secao {
     box-shadow: 0 4px 18px rgba(63, 48, 38, 0.35);
 }
 
-/* Bolinhas, mesmo padrão usado nos cards do site */
-.produto-dots {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+/* Setas laterais pra trocar de foto (substituem as bolinhas) */
+.produto-seta {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
 
-    gap: 6px;
+    width: 40px;
+    height: 40px;
 
-    margin-top: 18px;
-}
-
-.produto-dots .dot {
-    width: 7px;
-    height: 7px;
-
-    padding: 0;
     border: none;
     border-radius: 50%;
 
-    background-color: #BDB8B0;
+    background-color: rgba(252, 250, 246, 0.9);
+    color: #3F3026;
+
+    font-size: 26px;
+    line-height: 1;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
 
     cursor: pointer;
 
-    transition: background-color 0.2s ease, transform 0.2s ease;
+    transition: background-color 0.2s ease;
 }
 
-.produto-dots .dot.active {
-    background-color: #3F3026;
-    transform: scale(1.15);
+.produto-seta:hover {
+    background-color: #FCFAF6;
+}
+
+.produto-seta-esquerda {
+    left: 14px;
+}
+
+.produto-seta-direita {
+    right: 14px;
 }
 
 

@@ -280,20 +280,6 @@ function inicializarInteracaoCards(container) {
             });
         }
 
-        // Bônus no desktop: passar o mouse também troca a imagem
-        if (imagens.length > 1) {
-            box.addEventListener("mousemove", (evento) => {
-                const rect = box.getBoundingClientRect();
-                const relativeX = evento.clientX - rect.left;
-                const sliceWidth = rect.width / imagens.length;
-                let index = Math.floor(relativeX / sliceWidth);
-                index = Math.max(0, Math.min(imagens.length - 1, index));
-                trocarImagem(index);
-            });
-
-            box.addEventListener("mouseleave", () => trocarImagem(0));
-        }
-
         // Continua funcionando arrastar (swipe) no celular
         let touchStartX = 0;
         let touchDeltaX = 0;

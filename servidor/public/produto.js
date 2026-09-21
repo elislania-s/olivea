@@ -83,12 +83,18 @@ document.addEventListener("DOMContentLoaded", async function () {
 
                 if (setaEsquerda) {
                     setaEsquerda.hidden = false;
-                    setaEsquerda.addEventListener("click", () => irParaImagem(indiceImagemAtual - 1));
+                    setaEsquerda.addEventListener("click", (evento) => {
+                        evento.stopPropagation();
+                        irParaImagem(indiceImagemAtual - 1);
+                    });
                 }
 
                 if (setaDireita) {
                     setaDireita.hidden = false;
-                    setaDireita.addEventListener("click", () => irParaImagem(indiceImagemAtual + 1));
+                    setaDireita.addEventListener("click", (evento) => {
+                        evento.stopPropagation();
+                        irParaImagem(indiceImagemAtual + 1);
+                    });
                 }
             }
 

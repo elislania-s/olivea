@@ -206,55 +206,16 @@ document.addEventListener("DOMContentLoaded", async function () {
 
 
     // ============================================
-    // 5) LUPA (hover, desktop) + LIGHTBOX (clique)
+    // 5) LIGHTBOX (clique/toque abre em tela cheia)
     // ============================================
 
     try {
         const zoomBox = document.getElementById("produtoZoomBox");
-        const lens = document.getElementById("produtoLens");
         const lightbox = document.getElementById("produtoLightbox");
         const lightboxImg = document.getElementById("produtoLightboxImg");
         const btnFecharLightbox = document.getElementById("produtoLightboxFechar");
 
-        if (zoomBox && lens && lightbox && lightboxImg && imagemPrincipal) {
-
-            const temHover = window.matchMedia("(hover: hover)").matches;
-            const ZOOM_FATOR = 2.4;
-
-            if (temHover) {
-
-                zoomBox.addEventListener("mouseenter", () => {
-                    lens.style.display = "block";
-                });
-
-                zoomBox.addEventListener("mousemove", (evento) => {
-
-                    const rect = zoomBox.getBoundingClientRect();
-                    const x = evento.clientX - rect.left;
-                    const y = evento.clientY - rect.top;
-
-                    const lensSize = lens.offsetWidth;
-
-                    let lensX = x - lensSize / 2;
-                    let lensY = y - lensSize / 2;
-
-                    lensX = Math.max(0, Math.min(rect.width - lensSize, lensX));
-                    lensY = Math.max(0, Math.min(rect.height - lensSize, lensY));
-
-                    lens.style.left = lensX + "px";
-                    lens.style.top = lensY + "px";
-
-                    lens.style.backgroundImage = `url("${imagemPrincipal.src}")`;
-                    lens.style.backgroundSize =
-                        (rect.width * ZOOM_FATOR) + "px " + (rect.height * ZOOM_FATOR) + "px";
-                    lens.style.backgroundPosition =
-                        `-${lensX * ZOOM_FATOR}px -${lensY * ZOOM_FATOR}px`;
-                });
-
-                zoomBox.addEventListener("mouseleave", () => {
-                    lens.style.display = "none";
-                });
-            }
+        if (zoomBox && lightbox && lightboxImg && imagemPrincipal) {
 
             zoomBox.addEventListener("click", () => {
                 if (houveSwipeRecente) {

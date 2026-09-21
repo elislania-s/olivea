@@ -385,24 +385,6 @@ body.produto-pronto .produto-secao {
     stroke: #FCFAF6;
 }
 
-.produto-lens {
-    display: none;
-
-    position: absolute;
-
-    width: 160px;
-    height: 160px;
-
-    border: 2px solid #FCFAF6;
-    border-radius: 50%;
-
-    background-repeat: no-repeat;
-
-    pointer-events: none;
-
-    box-shadow: 0 4px 18px rgba(63, 48, 38, 0.35);
-}
-
 /* Setas laterais pra trocar de foto (substituem as bolinhas) */
 .produto-seta {
     position: absolute;
@@ -1187,8 +1169,6 @@ body.produto-pronto .produto-secao {
     }
 
     .produto-nome { font-size: 32px; }
-
-    .produto-lens { display: none !important; }
 }
 
 @media (max-width: 480px) {

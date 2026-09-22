@@ -56,6 +56,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // ============================================
+    // MÁSCARA DO CPF
+    // ============================================
+
+    const inputCpf = document.getElementById("cpf");
+
+    inputCpf.addEventListener("input", () => {
+        let valor = inputCpf.value.replace(/\D/g, "").slice(0, 11);
+        valor = valor.replace(/(\d{3})(\d)/, "$1.$2");
+        valor = valor.replace(/(\d{3})(\d)/, "$1.$2");
+        valor = valor.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+        inputCpf.value = valor;
+    });
+
+
+    // ============================================
     // CEP AUTOMÁTICO (ViaCEP) + CÁLCULO DE FRETE
     // (considerando a sacola inteira)
     // ============================================
@@ -169,8 +184,8 @@ document.addEventListener("DOMContentLoaded", () => {
             if (ehPix) {
                 blocoPix.innerHTML = `
                     <p class="checkout-frete-aviso">
-                        Você vai ser levado pro Mercado Pago já na tela de Pix — só escanear o
-                        QR Code ou copiar o código pra pagar. A confirmação é automática.
+                        Você vai ser levado pro ambiente seguro do PagBank já na tela de Pix — só
+                        escanear o QR Code ou copiar o código pra pagar. A confirmação é automática.
                     </p>
                 `;
             }
@@ -189,6 +204,13 @@ document.addEventListener("DOMContentLoaded", () => {
         evento.preventDefault();
 
         if (btnContinuar.disabled) return;
+
+        const cpfLimpo = inputCpf.value.replace(/\D/g, "");
+        if (cpfLimpo.length !== 11) {
+            mensagem.textContent = "Informe um CPF válido (11 dígitos).";
+            return;
+        }
+
         btnContinuar.disabled = true;
         mensagem.textContent = "";
 
@@ -196,6 +218,7 @@ document.addEventListener("DOMContentLoaded", () => {
             nomeCompleto: document.getElementById("nomeCompleto").value.trim(),
             email: document.getElementById("email").value.trim(),
             whatsapp: document.getElementById("whatsapp").value.trim(),
+            cpf: cpfLimpo,
             cep: document.getElementById("cep").value.trim(),
             rua: document.getElementById("rua").value.trim(),
             numero: document.getElementById("numero").value.trim(),
@@ -212,7 +235,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         try {
 
-            const resposta = await fetch("/api/criar-preferencia", {
+            const resposta = await fetch("/api/criar-checkout-pagbank", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -227,11 +250,11 @@ document.addEventListener("DOMContentLoaded", () => {
             clearTimeout(tempoLimite);
             const dados = await resposta.json();
 
-            if (!resposta.ok || !dados.init_point) {
+            if (!resposta.ok || !dados.checkout_url) {
                 throw new Error(dados.erro || "Falha ao criar pagamento");
             }
 
-            window.location.href = dados.init_point;
+            window.location.href = dados.checkout_url;
 
         } catch (erro) {
             clearTimeout(tempoLimite);

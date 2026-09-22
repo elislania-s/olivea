@@ -1,22 +1,19 @@
 /* ======================================
-   SERVIDOR — OLIVEA + MERCADO PAGO
+   SERVIDOR — OLIVEA + PAGBANK
 
    O QUE ESTE ARQUIVO FAZ:
-   1) Recebe a sacola do site (POST /api/criar-preferencia)
-      e cria a cobrança no Mercado Pago.
-   2) Devolve o link de pagamento (init_point) pro site
-      redirecionar o cliente.
-   3) Recebe as notificações do Mercado Pago avisando se
-      o pagamento foi aprovado (POST /api/webhook-mercadopago) —
-      é aqui que, no futuro, você vai marcar o pedido como
-      "pago" no seu sistema/planilha/e-mail.
+   1) Recebe a sacola do site (POST /api/criar-checkout-pagbank)
+      e cria a cobrança (Checkout) no PagBank.
+   2) Devolve a URL de pagamento pro site redirecionar o cliente.
+   3) Recebe as notificações do PagBank avisando se o pagamento
+      mudou de status (POST /api/webhook-pagbank) — é aqui que,
+      no futuro, você vai marcar o pedido como "pago".
 
    POR QUE ISSO PRECISA FICAR SEPARADO DO SITE:
-   O Access Token é a chave secreta da sua conta Mercado
-   Pago. Se ela estivesse em um arquivo do site (HTML/JS),
-   qualquer visitante conseguiria ler e usar essa chave.
-   Por isso ela só existe aqui, no servidor, escondida
-   numa variável de ambiente (arquivo .env).
+   O Token é a chave secreta da sua conta PagBank. Se ela estivesse
+   em um arquivo do site (HTML/JS), qualquer visitante conseguiria
+   ler e usar essa chave. Por isso ela só existe aqui, no servidor,
+   escondida numa variável de ambiente (arquivo .env).
 ====================================== */
 
 require("dotenv").config();
@@ -25,7 +22,6 @@ const path = require("path");
 const express = require("express");
 const cors = require("cors");
 const session = require("express-session");
-const { MercadoPagoConfig, Preference, Payment } = require("mercadopago");
 
 const { router: adminAuthRouter } = require("./admin-auth");
 const produtosRotas = require("./produtos-rotas");
@@ -63,14 +59,13 @@ app.use(produtosRotas);
 app.use(freteRotas);
 
 // Serve o próprio site (tudo que estiver dentro da pasta "public/")
-// Assim o site e o servidor ficam na MESMA url — não precisa mais
-// apontar o mercadopago.js pra um endereço diferente.
 app.use(express.static(path.join(__dirname, "public")));
 
-if (!process.env.MP_ACCESS_TOKEN) {
+if (!process.env.PAGBANK_TOKEN) {
     console.error(
-        "\n[Olivea] Faltou configurar o MP_ACCESS_TOKEN no arquivo .env. " +
-        "Veja o .env.example.\n"
+        "\n[Olivea] Faltou configurar o PAGBANK_TOKEN no arquivo .env. " +
+        "Veja como pegar o token no painel do PagBank (Meu Negócio > Vendas > " +
+        "Integrações > Gerar Token).\n"
     );
 }
 
@@ -82,17 +77,13 @@ if (!process.env.URL_PUBLICA) {
     );
 }
 
-const client = new MercadoPagoConfig({
-    accessToken: process.env.MP_ACCESS_TOKEN
-});
+// Troque para a URL de sandbox enquanto estiver testando:
+// https://sandbox.api.pagseguro.com
+const PAGBANK_API_BASE = process.env.PAGBANK_API_BASE || "https://api.pagseguro.com";
 
 
 /* ================================================
-   CRIAR A COBRANÇA (chamado pelo mercadopago.js do site)
-================================================ */
-
-/* ================================================
-   PEDIDO VIA PIX DIRETO (sem Mercado Pago)
+   PEDIDO VIA PIX DIRETO (sem gateway)
 
    Registra o pedido como "aguardando confirmação
    manual" — o Pix cai direto na sua conta, e você
@@ -163,7 +154,12 @@ app.post("/api/criar-pedido-pix", async (req, res) => {
 });
 
 
-app.post("/api/criar-preferencia", async (req, res) => {
+/* ================================================
+   CRIAR A COBRANÇA NO PAGBANK
+   (chamado pelo checkout.js do site)
+================================================ */
+
+app.post("/api/criar-checkout-pagbank", async (req, res) => {
 
     try {
         const itensRecebidos = req.body.itens || [];
@@ -175,35 +171,45 @@ app.post("/api/criar-preferencia", async (req, res) => {
         }
 
         const camposObrigatorios = [
-            "nomeCompleto", "email", "whatsapp",
+            "nomeCompleto", "email", "whatsapp", "cpf",
             "cep", "rua", "numero", "bairro", "cidade", "estado"
         ];
 
         for (const campo of camposObrigatorios) {
             if (!cliente[campo] || !String(cliente[campo]).trim()) {
-                return res.status(400).json({ erro: "Preencha todos os campos obrigatórios do endereço." });
+                return res.status(400).json({ erro: "Preencha todos os campos obrigatórios, incluindo o CPF." });
             }
         }
 
-        const itens = itensRecebidos.map((item) => ({
-            title: String(item.nome).slice(0, 250),
+        const cpfLimpo = String(cliente.cpf).replace(/\D/g, "");
+        if (cpfLimpo.length !== 11) {
+            return res.status(400).json({ erro: "CPF inválido." });
+        }
+
+        // Monta os itens no formato que o PagBank espera
+        // (valores em CENTAVOS, não em reais)
+        const itensPagbank = itensRecebidos.map((item, index) => ({
+            reference_id: String(item.id || `item-${index}`),
+            name: String(item.nome).slice(0, 100),
             quantity: Number(item.quantidade) || 1,
-            unit_price: Number(item.preco),
-            currency_id: "BRL"
+            unit_amount: Math.round(Number(item.preco) * 100)
         }));
 
         // Frete vira mais um "item" na cobrança, pra entrar no
         // mesmo pagamento (o cliente paga tudo de uma vez só)
         if (frete && frete.preco > 0) {
-            itens.push({
-                title: "Frete - " + (frete.servico || "Entrega"),
+            itensPagbank.push({
+                reference_id: "frete",
+                name: "Frete - " + (frete.servico || "Entrega"),
                 quantity: 1,
-                unit_price: Number(frete.preco),
-                currency_id: "BRL"
+                unit_amount: Math.round(Number(frete.preco) * 100)
             });
         }
 
-        const total = itens.reduce((soma, item) => soma + item.unit_price * item.quantity, 0);
+        const totalReais = itensPagbank.reduce(
+            (soma, item) => soma + (item.unit_amount * item.quantity) / 100,
+            0
+        );
 
         // 1) Grava o pedido no nosso banco, com status "pendente"
         const { data: pedido, error: erroPedido } = await supabase
@@ -220,7 +226,7 @@ app.post("/api/criar-preferencia", async (req, res) => {
                 cidade: cliente.cidade,
                 estado: cliente.estado,
                 itens: itensRecebidos,
-                total,
+                total: totalReais,
                 status: "pendente"
             })
             .select()
@@ -228,131 +234,141 @@ app.post("/api/criar-preferencia", async (req, res) => {
 
         if (erroPedido) throw erroPedido;
 
-        // 2) Cria a cobrança no Mercado Pago, já com os dados do
-        //    cliente (nome, email, telefone e endereço de entrega)
+        // 2) Cria o Checkout no PagBank, já com os dados do cliente
         const urlPublica = process.env.URL_PUBLICA;
 
-        const [ddd, ...restoNumero] = cliente.whatsapp.replace(/\D/g, "").length > 10
-            ? [cliente.whatsapp.replace(/\D/g, "").slice(0, 2), cliente.whatsapp.replace(/\D/g, "").slice(2)]
-            : ["", cliente.whatsapp.replace(/\D/g, "")];
-
-        const preference = new Preference(client);
+        const whatsappLimpo = cliente.whatsapp.replace(/\D/g, "");
+        const [ddd, ...restoNumero] = whatsappLimpo.length > 10
+            ? [whatsappLimpo.slice(0, 2), whatsappLimpo.slice(2)]
+            : ["", whatsappLimpo];
 
         const formaPagamentoPreferida = req.body.formaPagamentoPreferida;
 
-        const resultado = await preference.create({
-            body: {
-                items: itens,
+        const payloadCheckout = {
+            reference_id: String(pedido.id),
 
-                payer: {
-                    name: cliente.nomeCompleto,
-                    email: cliente.email,
-                    phone: {
-                        area_code: ddd,
-                        number: restoNumero.join("")
-                    },
-                    address: {
-                        zip_code: cliente.cep.replace(/\D/g, ""),
-                        street_name: cliente.rua,
-                        street_number: cliente.numero
-                    }
-                },
+            customer: {
+                name: cliente.nomeCompleto,
+                email: cliente.email,
+                tax_id: cpfLimpo,
+                phone: {
+                    country: "+55",
+                    area: ddd,
+                    number: restoNumero.join("")
+                }
+            },
 
-                // Se o cliente já escolheu "Pix" no nosso checkout,
-                // pede pro Mercado Pago abrir direto na tela do Pix,
-                // sem precisar escolher de novo lá.
-                ...(formaPagamentoPreferida === "pix" ? {
-                    payment_methods: {
-                        default_payment_method_id: "pix"
-                    }
-                } : {}),
+            // Se o cliente já chegou de um endereço válido, deixamos
+            // travado (address_modifiable: false) pra não haver
+            // divergência com o frete já calculado.
+            customer_modifiable: true,
 
-                // Liga essa cobrança ao pedido salvo no nosso banco —
-                // é assim que o webhook vai saber qual pedido atualizar.
-                external_reference: pedido.id,
+            items: itensPagbank,
 
-                back_urls: {
-                    success: urlPublica + "/pagamento-sucesso.html",
-                    failure: urlPublica + "/pagamento-erro.html",
-                    pending: urlPublica + "/pagamento-pendente.html"
-                },
+            // Se o cliente escolheu "Pix" no nosso checkout, restringe
+            // o PagBank a mostrar só essa opção; senão, deixa cartão.
+            payment_methods: formaPagamentoPreferida === "pix"
+                ? [{ type: "PIX" }]
+                : [{ type: "CREDIT_CARD" }, { type: "DEBIT_CARD" }],
 
-                auto_return: "approved",
-                notification_url: urlPublica + "/api/webhook-mercadopago"
-            }
+            redirect_url: urlPublica + "/pagamento-sucesso.html",
+            return_url: urlPublica + "/checkout.html",
+
+            notification_urls: [urlPublica + "/api/webhook-pagbank"],
+            payment_notification_urls: [urlPublica + "/api/webhook-pagbank"]
+        };
+
+        const respostaPagbank = await fetch(`${PAGBANK_API_BASE}/checkouts`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${process.env.PAGBANK_TOKEN}`,
+                "Content-Type": "application/json",
+                "accept": "application/json"
+            },
+            body: JSON.stringify(payloadCheckout)
         });
 
-        // 3) Guarda o id da preferência no pedido, pra referência futura
+        const dadosPagbank = await respostaPagbank.json();
+
+        if (!respostaPagbank.ok) {
+            console.error("[Olivea] Erro do PagBank ao criar checkout:", JSON.stringify(dadosPagbank));
+            throw new Error("PagBank recusou a criação do checkout");
+        }
+
+        // A URL de pagamento vem dentro de "links", no link com rel "PAY"
+        const linkPagamento = (dadosPagbank.links || []).find((link) => link.rel === "PAY");
+
+        if (!linkPagamento) {
+            console.error("[Olivea] PagBank não retornou link de pagamento:", JSON.stringify(dadosPagbank));
+            throw new Error("PagBank não retornou o link de pagamento");
+        }
+
+        // 3) Guarda o id do checkout no pedido, pra referência futura
         await supabase
             .from("pedidos")
-            .update({ preferencia_id: resultado.id })
+            .update({ preferencia_id: dadosPagbank.id })
             .eq("id", pedido.id);
 
-        res.json({ init_point: resultado.init_point });
+        res.json({ checkout_url: linkPagamento.href });
 
     } catch (erro) {
-        console.error("Erro ao criar preferência:", erro);
-        res.status(500).json({ erro: "Erro ao criar preferência de pagamento" });
+        console.error("Erro ao criar checkout PagBank:", erro);
+        res.status(500).json({ erro: "Erro ao criar checkout de pagamento" });
     }
 });
 
 
 /* ================================================
-   WEBHOOK — Mercado Pago avisa aqui quando o status
-   do pagamento muda (aprovado, recusado, etc.)
+   WEBHOOK — PagBank avisa aqui quando o status
+   do checkout/pagamento muda (pago, recusado, etc.)
+
+   IMPORTANTE: o formato exato do corpo dessa notificação
+   pode variar um pouco. O console.log abaixo mostra o payload
+   real assim que a primeira notificação chegar em produção —
+   ajuste a leitura de "novoStatus" conforme o que aparecer lá,
+   se necessário.
 ================================================ */
 
-app.post("/api/webhook-mercadopago", async (req, res) => {
+app.post("/api/webhook-pagbank", async (req, res) => {
 
     try {
-        const tipo = req.query.type || req.body.type;
-        const paymentId = req.query["data.id"] || (req.body.data && req.body.data.id);
+        console.log("[Olivea] Webhook PagBank recebido:", JSON.stringify(req.body));
 
-        if (tipo === "payment" && paymentId) {
+        const referenciaExterna = req.body.reference_id
+            || (req.body.charges && req.body.charges[0] && req.body.charges[0].reference_id);
 
-            const payment = new Payment(client);
-            const pagamento = await payment.get({ id: paymentId });
+        const statusCharge = req.body.status
+            || (req.body.charges && req.body.charges[0] && req.body.charges[0].status);
 
-            console.log(
-                "[Olivea] Pagamento", paymentId,
-                "- status:", pagamento.status,
-                "- valor:", pagamento.transaction_amount
-            );
+        if (referenciaExterna) {
 
-            const pedidoId = pagamento.external_reference;
+            const statusPorPagamento = {
+                PAID: "aprovado",
+                AVAILABLE: "aprovado",
+                DECLINED: "recusado",
+                CANCELED: "recusado",
+                IN_ANALYSIS: "pendente",
+                WAITING: "pendente"
+            };
 
-            if (pedidoId) {
+            const novoStatus = statusPorPagamento[statusCharge] || "pendente";
 
-                const statusPorPagamento = {
-                    approved: "aprovado",
-                    rejected: "recusado",
-                    cancelled: "recusado",
-                    refunded: "recusado",
-                    pending: "pendente",
-                    in_process: "pendente"
-                };
+            const { data: pedidoAtualizado } = await supabase
+                .from("pedidos")
+                .update({ status: novoStatus })
+                .eq("id", referenciaExterna)
+                .select()
+                .single();
 
-                const novoStatus = statusPorPagamento[pagamento.status] || "pendente";
-
-                const { data: pedidoAtualizado } = await supabase
-                    .from("pedidos")
-                    .update({ status: novoStatus })
-                    .eq("id", pedidoId)
-                    .select()
-                    .single();
-
-                if (novoStatus === "aprovado" && pedidoAtualizado) {
-                    await enviarEmailNovoPedido(pedidoAtualizado);
-                }
+            if (novoStatus === "aprovado" && pedidoAtualizado) {
+                await enviarEmailNovoPedido(pedidoAtualizado);
             }
         }
 
-        // Responder 200 rápido é importante — o Mercado Pago
-        // reenvia a notificação se não receber essa confirmação.
         res.sendStatus(200);
 
     } catch (erro) {
-        console.error("Erro no webhook:", erro);
+        console.error("Erro no webhook PagBank:", erro);
         res.sendStatus(200); // mesmo com erro interno, confirma o recebimento
     }
 });
@@ -363,7 +379,7 @@ app.post("/api/webhook-mercadopago", async (req, res) => {
 ================================================ */
 
 app.get("/", (req, res) => {
-    res.send("Servidor Olivea + Mercado Pago está no ar ✅");
+    res.send("Servidor Olivea + PagBank está no ar ✅");
 });
 
 

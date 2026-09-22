@@ -97,32 +97,6 @@ document.addEventListener("DOMContentLoaded", async function () {
                     });
                 }
             }
-
-            // Deslizar (swipe) no celular também troca a imagem
-            const zoomBoxSwipe = document.getElementById("produtoZoomBox");
-
-            if (zoomBoxSwipe && produto.imagens.length > 1) {
-
-                let toqueInicioX = 0;
-                let toqueDeltaX = 0;
-                const LIMITE_SWIPE = 35;
-
-                zoomBoxSwipe.addEventListener("touchstart", (evento) => {
-                    toqueInicioX = evento.touches[0].clientX;
-                    toqueDeltaX = 0;
-                }, { passive: true });
-
-                zoomBoxSwipe.addEventListener("touchmove", (evento) => {
-                    toqueDeltaX = evento.touches[0].clientX - toqueInicioX;
-                }, { passive: true });
-
-                zoomBoxSwipe.addEventListener("touchend", () => {
-                    if (Math.abs(toqueDeltaX) > LIMITE_SWIPE) {
-                        irParaImagem(indiceImagemAtual + (toqueDeltaX < 0 ? 1 : -1));
-                        houveSwipeRecente = true;
-                    }
-                });
-            }
         }
     } catch (erro) {
         console.error("[Olivea] Erro ao montar a galeria:", erro);

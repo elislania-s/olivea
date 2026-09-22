@@ -364,8 +364,6 @@ function iniciarPainel() {
             const resposta = await fetch("/api/configuracoes");
             const config = await resposta.json();
 
-            document.getElementById("configItensPorPagina").value = config.itens_por_pagina || 9;
-
             bannerUrlAtual = config.banner_colecao || "";
             if (bannerUrlAtual) {
                 const preview = document.getElementById("configBannerPreview");
@@ -426,7 +424,6 @@ function iniciarPainel() {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    itens_por_pagina: parseInt(document.getElementById("configItensPorPagina").value, 10) || 9,
                     banner_colecao: bannerUrlAtual
                 })
             });

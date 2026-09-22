@@ -34,10 +34,6 @@ async function carregarColecao(grid) {
     try {
         const categoria = grid.dataset.categoria || "";
 
-        // Respeita o "produtos por página" definido no painel admin
-        const configuracoes = await (await fetch("/api/configuracoes")).json();
-        const limite = configuracoes.itens_por_pagina || 9;
-
         let url = "/api/produtos";
         if (categoria) url += "?categoria=" + encodeURIComponent(categoria);
 
@@ -50,21 +46,70 @@ async function carregarColecao(grid) {
             return;
         }
 
-        const produtosVisiveis = produtos.slice(0, limite);
-
-        grid.innerHTML = produtosVisiveis.map(criarCardColecao).join("");
+        // Renderiza TODOS os produtos de uma vez — a paginação (o que
+        // aparece antes de clicar "Ver mais") é feita só escondendo
+        // cards via CSS, não deixando de buscar eles.
+        grid.innerHTML = produtos.map(criarCardColecao).join("");
 
         inicializarInteracaoCards(grid);
-
-        // Como já aplicamos o limite aqui, o botão "Ver mais" (feito
-        // pra esconder linhas incompletas de cards fixos) não se aplica
-        // mais — evita comportamento estranho com conteúdo dinâmico.
-        esconderVerMais();
+        configurarPaginacaoPorFileiras(grid);
 
     } catch (erro) {
         console.error("[Olivea] Erro ao carregar coleção:", erro);
         grid.innerHTML = '<p style="padding:40px 0;grid-column:1/-1;">Não foi possível carregar os produtos agora.</p>';
     }
+}
+
+// Mostra só as fileiras "completas" iniciais (3 fileiras de 3 = 9
+// produtos em telas grandes, 4 fileiras de 2 = 8 em tablet/celular),
+// e revela o resto ao clicar em "Ver mais". Reage a redimensionar a
+// tela também (some/aparece coluna, recalcula).
+function configurarPaginacaoPorFileiras(grid) {
+
+    const verMaisBtn = document.querySelector(".collection-products .see-more");
+    if (!verMaisBtn) return;
+
+    const cards = Array.from(grid.querySelectorAll(".product-card"));
+    let expandido = false;
+
+    function colunasAtuais() {
+        return window.innerWidth > 1100 ? 3 : 2;
+    }
+
+    function fileirasIniciais() {
+        return colunasAtuais() === 3 ? 3 : 4;
+    }
+
+    function aplicar() {
+
+        if (expandido) return;
+
+        const colunas = colunasAtuais();
+        const visiveis = colunas * fileirasIniciais();
+
+        cards.forEach((card, index) => {
+            card.classList.toggle("is-hidden", index >= visiveis);
+        });
+
+        verMaisBtn.style.display = cards.length > visiveis ? "" : "none";
+    }
+
+    verMaisBtn.style.display = "";
+
+    verMaisBtn.onclick = (evento) => {
+        evento.preventDefault();
+        expandido = true;
+        cards.forEach((card) => card.classList.remove("is-hidden"));
+        verMaisBtn.style.display = "none";
+    };
+
+    aplicar();
+
+    let temporizadorResize;
+    window.addEventListener("resize", () => {
+        clearTimeout(temporizadorResize);
+        temporizadorResize = setTimeout(aplicar, 150);
+    });
 }
 
 async function carregarDestaques(grid) {
@@ -182,6 +227,7 @@ function montarTitulo(nome, tag, centralizado) {
 function criarCardColecao(produto) {
 
     const imagens = (produto.imagens && produto.imagens.length) ? produto.imagens : [""];
+    const esgotado = Number(produto.estoque) <= 0;
 
     return `
         <article class="product-card" data-category="${produto.categoria}" data-price="${produto.preco}">
@@ -190,7 +236,10 @@ function criarCardColecao(produto) {
                 ${montarTitulo(produto.nome, "h3", false)}
                 <p class="product-price">R$ ${Number(produto.preco).toFixed(2).replace(".", ",")}</p>
             </a>
-            <a href="produto.html?id=${produto.id}" class="buy-button">COMPRAR</a>
+            ${esgotado
+                ? `<span class="buy-button" style="opacity:0.5; cursor:not-allowed; pointer-events:none;">ESGOTADO</span>`
+                : `<a href="produto.html?id=${produto.id}" class="buy-button">COMPRAR</a>`
+            }
         </article>
     `;
 }
@@ -279,25 +328,5 @@ function inicializarInteracaoCards(container) {
                 trocarImagem(indiceAtual + 1);
             });
         }
-
-        // Continua funcionando arrastar (swipe) no celular
-        let touchStartX = 0;
-        let touchDeltaX = 0;
-        const SWIPE_THRESHOLD = 35;
-
-        box.addEventListener("touchstart", (evento) => {
-            touchStartX = evento.touches[0].clientX;
-            touchDeltaX = 0;
-        }, { passive: true });
-
-        box.addEventListener("touchmove", (evento) => {
-            touchDeltaX = evento.touches[0].clientX - touchStartX;
-        }, { passive: true });
-
-        box.addEventListener("touchend", () => {
-            if (Math.abs(touchDeltaX) > SWIPE_THRESHOLD) {
-                trocarImagem(indiceAtual + (touchDeltaX < 0 ? 1 : -1), { instantaneo: true });
-            }
-        });
     });
 }

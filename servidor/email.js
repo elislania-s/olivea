@@ -46,6 +46,11 @@ async function enviarEmailNovoPedido(pedido) {
         `- ${item.quantidade}x ${item.nome} — R$ ${Number(item.preco).toFixed(2).replace(".", ",")}`
     ).join("\n");
 
+    // Linha do frete só aparece se o pedido tiver frete salvo
+    const linhaFrete = pedido.frete_servico
+        ? `Frete escolhido: ${pedido.frete_servico} — R$ ${Number(pedido.frete_valor).toFixed(2).replace(".", ",")}\n`
+        : "";
+
     const corpo = `
 Novo pedido aprovado na Olivea! 🎉
 
@@ -62,7 +67,7 @@ CEP: ${pedido.cep}
 ITENS
 ${listaItens}
 
-TOTAL: R$ ${Number(pedido.total).toFixed(2).replace(".", ",")}
+${linhaFrete}TOTAL: R$ ${Number(pedido.total).toFixed(2).replace(".", ",")}
 
 Número do pedido (id interno): ${pedido.id}
 `.trim();

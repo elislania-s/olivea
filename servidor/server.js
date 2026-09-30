@@ -216,6 +216,8 @@ app.post("/api/criar-checkout-infinitepay", async (req, res) => {
                 estado: cliente.estado,
                 itens: itensRecebidos,
                 total: totalReais,
+                frete_servico: frete ? frete.servico : null,
+                frete_valor: frete ? frete.preco : null,
                 status: "pendente"
             })
             .select()

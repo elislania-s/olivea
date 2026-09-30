@@ -56,21 +56,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // ============================================
-    // MÁSCARA DO CPF
-    // ============================================
-
-    const inputCpf = document.getElementById("cpf");
-
-    inputCpf.addEventListener("input", () => {
-        let valor = inputCpf.value.replace(/\D/g, "").slice(0, 11);
-        valor = valor.replace(/(\d{3})(\d)/, "$1.$2");
-        valor = valor.replace(/(\d{3})(\d)/, "$1.$2");
-        valor = valor.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
-        inputCpf.value = valor;
-    });
-
-
-    // ============================================
     // CEP AUTOMÁTICO (ViaCEP) + CÁLCULO DE FRETE
     // (considerando a sacola inteira)
     // ============================================
@@ -184,7 +169,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (ehPix) {
                 blocoPix.innerHTML = `
                     <p class="checkout-frete-aviso">
-                        Você vai ser levado pro ambiente seguro do PagBank já na tela de Pix — só
+                        Você vai ser levado pro ambiente seguro da InfinitePay já na tela de Pix — só
                         escanear o QR Code ou copiar o código pra pagar. A confirmação é automática.
                     </p>
                 `;
@@ -205,12 +190,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (btnContinuar.disabled) return;
 
-        const cpfLimpo = inputCpf.value.replace(/\D/g, "");
-        if (cpfLimpo.length !== 11) {
-            mensagem.textContent = "Informe um CPF válido (11 dígitos).";
-            return;
-        }
-
         btnContinuar.disabled = true;
         mensagem.textContent = "";
 
@@ -218,7 +197,6 @@ document.addEventListener("DOMContentLoaded", () => {
             nomeCompleto: document.getElementById("nomeCompleto").value.trim(),
             email: document.getElementById("email").value.trim(),
             whatsapp: document.getElementById("whatsapp").value.trim(),
-            cpf: cpfLimpo,
             cep: document.getElementById("cep").value.trim(),
             rua: document.getElementById("rua").value.trim(),
             numero: document.getElementById("numero").value.trim(),
@@ -235,7 +213,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         try {
 
-            const resposta = await fetch("/api/criar-checkout-pagbank", {
+            const resposta = await fetch("/api/criar-checkout-infinitepay", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

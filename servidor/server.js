@@ -1,19 +1,19 @@
 /* ======================================
-   SERVIDOR — OLIVEA + PAGBANK
+   SERVIDOR — OLIVEA + INFINITEPAY
 
    O QUE ESTE ARQUIVO FAZ:
-   1) Recebe a sacola do site (POST /api/criar-checkout-pagbank)
-      e cria a cobrança (Checkout) no PagBank.
+   1) Recebe a sacola do site (POST /api/criar-checkout-infinitepay)
+      e cria o link de pagamento na InfinitePay.
    2) Devolve a URL de pagamento pro site redirecionar o cliente.
-   3) Recebe as notificações do PagBank avisando se o pagamento
-      mudou de status (POST /api/webhook-pagbank) — é aqui que,
-      no futuro, você vai marcar o pedido como "pago".
+   3) Recebe as notificações da InfinitePay avisando quando um
+      pagamento é aprovado (POST /api/webhook-infinitepay).
 
-   POR QUE ISSO PRECISA FICAR SEPARADO DO SITE:
-   O Token é a chave secreta da sua conta PagBank. Se ela estivesse
-   em um arquivo do site (HTML/JS), qualquer visitante conseguiria
-   ler e usar essa chave. Por isso ela só existe aqui, no servidor,
-   escondida numa variável de ambiente (arquivo .env).
+   SOBRE A "HANDLE":
+   Diferente do Mercado Pago e do PagBank, a InfinitePay não usa
+   um token secreto pra criar o link — só a sua "InfiniteTag"
+   (o nome de usuário que aparece no topo do seu app InfinitePay,
+   sem o "$"). Mesmo assim, ela fica numa variável de ambiente
+   pra facilitar trocar sem mexer no código.
 ====================================== */
 
 require("dotenv").config();
@@ -61,11 +61,11 @@ app.use(freteRotas);
 // Serve o próprio site (tudo que estiver dentro da pasta "public/")
 app.use(express.static(path.join(__dirname, "public")));
 
-if (!process.env.PAGBANK_TOKEN) {
+if (!process.env.INFINITEPAY_HANDLE) {
     console.error(
-        "\n[Olivea] Faltou configurar o PAGBANK_TOKEN no arquivo .env. " +
-        "Veja como pegar o token no painel do PagBank (Meu Negócio > Vendas > " +
-        "Integrações > Gerar Token).\n"
+        "\n[Olivea] Faltou configurar o INFINITEPAY_HANDLE no arquivo .env. " +
+        "É o nome de usuário (InfiniteTag) que aparece no topo do seu app " +
+        "InfinitePay, sem o símbolo $.\n"
     );
 }
 
@@ -76,10 +76,6 @@ if (!process.env.URL_PUBLICA) {
         "https://olivea.onrender.com).\n"
     );
 }
-
-// Troque para a URL de sandbox enquanto estiver testando:
-// https://sandbox.api.pagseguro.com
-const PAGBANK_API_BASE = process.env.PAGBANK_API_BASE || "https://api.pagseguro.com";
 
 
 /* ================================================
@@ -155,11 +151,11 @@ app.post("/api/criar-pedido-pix", async (req, res) => {
 
 
 /* ================================================
-   CRIAR A COBRANÇA NO PAGBANK
+   CRIAR O LINK DE CHECKOUT NA INFINITEPAY
    (chamado pelo checkout.js do site)
 ================================================ */
 
-app.post("/api/criar-checkout-pagbank", async (req, res) => {
+app.post("/api/criar-checkout-infinitepay", async (req, res) => {
 
     try {
         const itensRecebidos = req.body.itens || [];
@@ -171,43 +167,36 @@ app.post("/api/criar-checkout-pagbank", async (req, res) => {
         }
 
         const camposObrigatorios = [
-            "nomeCompleto", "email", "whatsapp", "cpf",
+            "nomeCompleto", "email", "whatsapp",
             "cep", "rua", "numero", "bairro", "cidade", "estado"
         ];
 
         for (const campo of camposObrigatorios) {
             if (!cliente[campo] || !String(cliente[campo]).trim()) {
-                return res.status(400).json({ erro: "Preencha todos os campos obrigatórios, incluindo o CPF." });
+                return res.status(400).json({ erro: "Preencha todos os campos obrigatórios do endereço." });
             }
         }
 
-        const cpfLimpo = String(cliente.cpf).replace(/\D/g, "");
-        if (cpfLimpo.length !== 11) {
-            return res.status(400).json({ erro: "CPF inválido." });
-        }
-
-        // Monta os itens no formato que o PagBank espera
+        // Monta os itens no formato que a InfinitePay espera
         // (valores em CENTAVOS, não em reais)
-        const itensPagbank = itensRecebidos.map((item, index) => ({
-            reference_id: String(item.id || `item-${index}`),
-            name: String(item.nome).slice(0, 100),
+        const itensInfinitePay = itensRecebidos.map((item) => ({
+            description: String(item.nome).slice(0, 100),
             quantity: Number(item.quantidade) || 1,
-            unit_amount: Math.round(Number(item.preco) * 100)
+            price: Math.round(Number(item.preco) * 100)
         }));
 
         // Frete vira mais um "item" na cobrança, pra entrar no
         // mesmo pagamento (o cliente paga tudo de uma vez só)
         if (frete && frete.preco > 0) {
-            itensPagbank.push({
-                reference_id: "frete",
-                name: "Frete - " + (frete.servico || "Entrega"),
+            itensInfinitePay.push({
+                description: "Frete - " + (frete.servico || "Entrega"),
                 quantity: 1,
-                unit_amount: Math.round(Number(frete.preco) * 100)
+                price: Math.round(Number(frete.preco) * 100)
             });
         }
 
-        const totalReais = itensPagbank.reduce(
-            (soma, item) => soma + (item.unit_amount * item.quantity) / 100,
+        const totalReais = itensInfinitePay.reduce(
+            (soma, item) => soma + (item.price * item.quantity) / 100,
             0
         );
 
@@ -234,142 +223,111 @@ app.post("/api/criar-checkout-pagbank", async (req, res) => {
 
         if (erroPedido) throw erroPedido;
 
-        // 2) Cria o Checkout no PagBank, já com os dados do cliente
+        // 2) Cria o link de checkout na InfinitePay
         const urlPublica = process.env.URL_PUBLICA;
-
         const whatsappLimpo = cliente.whatsapp.replace(/\D/g, "");
-        const [ddd, ...restoNumero] = whatsappLimpo.length > 10
-            ? [whatsappLimpo.slice(0, 2), whatsappLimpo.slice(2)]
-            : ["", whatsappLimpo];
-
-        const formaPagamentoPreferida = req.body.formaPagamentoPreferida;
 
         const payloadCheckout = {
-            reference_id: String(pedido.id),
+            handle: process.env.INFINITEPAY_HANDLE,
+
+            items: itensInfinitePay,
+
+            // Liga esse link ao pedido salvo no nosso banco — é assim
+            // que o webhook vai saber qual pedido atualizar.
+            order_nsu: String(pedido.id),
 
             customer: {
                 name: cliente.nomeCompleto,
                 email: cliente.email,
-                tax_id: cpfLimpo,
-                phone: {
-                    country: "+55",
-                    area: ddd,
-                    number: restoNumero.join("")
-                }
+                // InfinitePay pede o telefone já com o +55 na frente
+                phone_number: "+55" + whatsappLimpo
             },
 
-            // Se o cliente já chegou de um endereço válido, deixamos
-            // travado (address_modifiable: false) pra não haver
-            // divergência com o frete já calculado.
-            customer_modifiable: true,
-
-            items: itensPagbank,
-
-            // Se o cliente escolheu "Pix" no nosso checkout, restringe
-            // o PagBank a mostrar só essa opção; senão, deixa cartão.
-            payment_methods: formaPagamentoPreferida === "pix"
-                ? [{ type: "PIX" }]
-                : [{ type: "CREDIT_CARD" }, { type: "DEBIT_CARD" }],
+            address: {
+                cep: cliente.cep.replace(/\D/g, ""),
+                street: cliente.rua,
+                neighborhood: cliente.bairro,
+                number: cliente.numero,
+                complement: cliente.complemento || ""
+            },
 
             redirect_url: urlPublica + "/pagamento-sucesso.html",
-            return_url: urlPublica + "/checkout.html",
-
-            notification_urls: [urlPublica + "/api/webhook-pagbank"],
-            payment_notification_urls: [urlPublica + "/api/webhook-pagbank"]
+            webhook_url: urlPublica + "/api/webhook-infinitepay"
         };
 
-        const respostaPagbank = await fetch(`${PAGBANK_API_BASE}/checkouts`, {
+        const respostaInfinitePay = await fetch("https://api.checkout.infinitepay.io/links", {
             method: "POST",
             headers: {
-                "Authorization": `Bearer ${process.env.PAGBANK_TOKEN}`,
                 "Content-Type": "application/json",
                 "accept": "application/json"
             },
             body: JSON.stringify(payloadCheckout)
         });
 
-        const dadosPagbank = await respostaPagbank.json();
+        const dadosInfinitePay = await respostaInfinitePay.json();
 
-        if (!respostaPagbank.ok) {
-            console.error("[Olivea] Erro do PagBank ao criar checkout:", JSON.stringify(dadosPagbank));
-            throw new Error("PagBank recusou a criação do checkout");
+        console.log(
+            "[Olivea] Resposta da InfinitePay (status " + respostaInfinitePay.status + "):",
+            JSON.stringify(dadosInfinitePay, null, 2)
+        );
+
+        if (!respostaInfinitePay.ok) {
+            throw new Error("InfinitePay recusou a criação do checkout");
         }
 
-        // A URL de pagamento vem dentro de "links", no link com rel "PAY"
-        const linkPagamento = (dadosPagbank.links || []).find((link) => link.rel === "PAY");
+        const checkoutUrl = dadosInfinitePay.checkout_url || dadosInfinitePay.url;
 
-        if (!linkPagamento) {
-            console.error("[Olivea] PagBank não retornou link de pagamento:", JSON.stringify(dadosPagbank));
-            throw new Error("PagBank não retornou o link de pagamento");
+        if (!checkoutUrl) {
+            throw new Error("InfinitePay não retornou o link de pagamento");
         }
 
-        // 3) Guarda o id do checkout no pedido, pra referência futura
-        await supabase
-            .from("pedidos")
-            .update({ preferencia_id: dadosPagbank.id })
-            .eq("id", pedido.id);
-
-        res.json({ checkout_url: linkPagamento.href });
+        res.json({ checkout_url: checkoutUrl });
 
     } catch (erro) {
-        console.error("Erro ao criar checkout PagBank:", erro);
+        console.error("Erro ao criar checkout InfinitePay:", erro);
         res.status(500).json({ erro: "Erro ao criar checkout de pagamento" });
     }
 });
 
 
 /* ================================================
-   WEBHOOK — PagBank avisa aqui quando o status
-   do checkout/pagamento muda (pago, recusado, etc.)
+   WEBHOOK — InfinitePay avisa aqui quando o
+   pagamento é aprovado.
 
-   IMPORTANTE: o formato exato do corpo dessa notificação
-   pode variar um pouco. O console.log abaixo mostra o payload
-   real assim que a primeira notificação chegar em produção —
-   ajuste a leitura de "novoStatus" conforme o que aparecer lá,
-   se necessário.
+   A InfinitePay só chama esse endpoint QUANDO O
+   PAGAMENTO É APROVADO (não existe um "status" no
+   corpo pra checar) — a própria chamada já é a
+   confirmação.
 ================================================ */
 
-app.post("/api/webhook-pagbank", async (req, res) => {
+app.post("/api/webhook-infinitepay", async (req, res) => {
 
     try {
-        console.log("[Olivea] Webhook PagBank recebido:", JSON.stringify(req.body));
+        console.log("[Olivea] Webhook InfinitePay recebido:", JSON.stringify(req.body));
 
-        const referenciaExterna = req.body.reference_id
-            || (req.body.charges && req.body.charges[0] && req.body.charges[0].reference_id);
+        const pedidoId = req.body.order_nsu;
 
-        const statusCharge = req.body.status
-            || (req.body.charges && req.body.charges[0] && req.body.charges[0].status);
-
-        if (referenciaExterna) {
-
-            const statusPorPagamento = {
-                PAID: "aprovado",
-                AVAILABLE: "aprovado",
-                DECLINED: "recusado",
-                CANCELED: "recusado",
-                IN_ANALYSIS: "pendente",
-                WAITING: "pendente"
-            };
-
-            const novoStatus = statusPorPagamento[statusCharge] || "pendente";
+        if (pedidoId) {
 
             const { data: pedidoAtualizado } = await supabase
                 .from("pedidos")
-                .update({ status: novoStatus })
-                .eq("id", referenciaExterna)
+                .update({ status: "aprovado" })
+                .eq("id", pedidoId)
                 .select()
                 .single();
 
-            if (novoStatus === "aprovado" && pedidoAtualizado) {
+            if (pedidoAtualizado) {
                 await enviarEmailNovoPedido(pedidoAtualizado);
             }
         }
 
+        // Responder rápido (idealmente em menos de 1 segundo) com 200.
+        // Se responder com erro, a InfinitePay tenta reenviar.
         res.sendStatus(200);
 
     } catch (erro) {
-        console.error("Erro no webhook PagBank:", erro);
-        res.sendStatus(200); // mesmo com erro interno, confirma o recebimento
+        console.error("Erro no webhook InfinitePay:", erro);
+        res.sendStatus(400); // aqui SIM vale devolver erro, pra InfinitePay reenviar depois
     }
 });
 
@@ -379,7 +337,7 @@ app.post("/api/webhook-pagbank", async (req, res) => {
 ================================================ */
 
 app.get("/", (req, res) => {
-    res.send("Servidor Olivea + PagBank está no ar ✅");
+    res.send("Servidor Olivea + InfinitePay está no ar ✅");
 });
 
 

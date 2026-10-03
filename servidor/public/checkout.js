@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
             ${freteEscolhido ? `
                 <div class="checkout-resumo-item">
                     <span>Frete (${freteEscolhido.servico})</span>
-                    <span>R$ ${valorFrete.toFixed(2).replace(".", ",")}</span>
+                    <span>${valorFrete === 0 ? "GRÁTIS" : "R$ " + valorFrete.toFixed(2).replace(".", ",")}</span>
                 </div>
             ` : `
                 <div class="checkout-resumo-item">
@@ -120,15 +120,22 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
+            // Frete grátis a partir de R$ 100 em produtos (sem contar o
+            // próprio frete) — o cliente ainda escolhe o TIPO de envio
+            // (PAC, SEDEX, Mini Envios), só que o valor cobrado é zero.
+            const freteGratis = oliveaTotalSacola() >= 100;
+
             freteResultado.innerHTML = dadosFrete.opcoes.map((opcao, index) => `
                 <label class="frete-opcao" data-index="${index}">
                     <input type="radio" name="freteEscolha" style="display:none;">
                     <span class="nome-servico">${opcao.servico}${opcao.nome ? " - " + opcao.nome : ""}
                         ${opcao.prazoDias ? ` (até ${opcao.prazoDias} dias úteis)` : ""}
                     </span>
-                    <span class="preco-servico">R$ ${opcao.preco.toFixed(2).replace(".", ",")}</span>
+                    <span class="preco-servico">${freteGratis ? "GRÁTIS" : "R$ " + opcao.preco.toFixed(2).replace(".", ",")}</span>
                 </label>
-            `).join("");
+            `).join("") + (freteGratis
+                ? '<p class="checkout-frete-aviso" style="margin-top:8px;">🎉 Frete grátis, sua compra passou de R$ 100!</p>'
+                : "");
 
             freteResultado.querySelectorAll(".frete-opcao").forEach((elemento, index) => {
                 elemento.addEventListener("click", () => {
@@ -136,7 +143,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     elemento.classList.add("selecionada");
                     elemento.querySelector("input").checked = true;
 
-                    freteEscolhido = dadosFrete.opcoes[index];
+                    freteEscolhido = {
+                        ...dadosFrete.opcoes[index],
+                        preco: freteGratis ? 0 : dadosFrete.opcoes[index].preco
+                    };
                     atualizarResumo();
                 });
             });

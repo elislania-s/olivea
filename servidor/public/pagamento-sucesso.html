@@ -48,6 +48,14 @@
 
     <footer class="footer-mini">© 2026 Olivea</footer>
 
+    <script src="carrinho.js"></script>
+    <script>
+        // Compra concluída com sucesso — esvazia a sacola do cliente.
+        if (typeof oliveaLimparSacola === "function") {
+            oliveaLimparSacola();
+        }
+    </script>
+
 </body>
 
 </html>

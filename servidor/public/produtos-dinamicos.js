@@ -284,6 +284,17 @@ function inicializarInteracaoCards(container) {
 
         if (imagens.length === 0) return;
 
+        // Pré-carrega as fotos extras desse card (além da primeira,
+        // que já carrega normal com a página) assim que o card
+        // aparece — assim, ao clicar na seta, a troca é instantânea
+        // em vez de esperar o celular baixar a imagem naquela hora.
+        if (imagens.length > 1) {
+            imagens.slice(1).forEach((url) => {
+                const preCarregador = new Image();
+                preCarregador.src = url;
+            });
+        }
+
         let indiceAtual = 0;
 
         function trocarImagem(index, { instantaneo = false } = {}) {

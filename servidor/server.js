@@ -185,9 +185,21 @@ app.post("/api/criar-checkout-infinitepay", async (req, res) => {
             price: Math.round(Number(item.preco) * 100)
         }));
 
+        // Subtotal só dos produtos (sem frete) — usado pra decidir
+        // se o frete é grátis. Calculado aqui no servidor, não
+        // confiando só no que o navegador mandou.
+        const subtotalProdutos = itensInfinitePay.reduce(
+            (soma, item) => soma + (item.price * item.quantity) / 100,
+            0
+        );
+        const freteGratis = subtotalProdutos >= 100;
+
         // Frete vira mais um "item" na cobrança, pra entrar no
-        // mesmo pagamento (o cliente paga tudo de uma vez só)
-        if (frete && frete.preco > 0) {
+        // mesmo pagamento (o cliente paga tudo de uma vez só).
+        // Acima de R$ 100 em produtos, o frete é grátis — o cliente
+        // só escolhe o tipo de envio (PAC/SEDEX/Mini Envios), mas
+        // não é cobrado por ele.
+        if (frete && frete.preco > 0 && !freteGratis) {
             itensInfinitePay.push({
                 description: "Frete - " + (frete.servico || "Entrega"),
                 quantity: 1,
@@ -219,7 +231,7 @@ app.post("/api/criar-checkout-infinitepay", async (req, res) => {
                 frete_servico: frete
                     ? (frete.nome ? `${frete.servico} - ${frete.nome}` : frete.servico)
                     : null,
-                frete_valor: frete ? frete.preco : null,
+                frete_valor: frete ? (freteGratis ? 0 : frete.preco) : null,
                 status: "pendente"
             })
             .select()

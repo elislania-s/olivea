@@ -72,6 +72,12 @@ function oliveaAtualizarQuantidade(id, quantidade) {
     }
 }
 
+// Esvazia a sacola inteira — chamada na página de pagamento
+// aprovado, depois que a compra foi concluída com sucesso.
+function oliveaLimparSacola() {
+    oliveaSalvarSacola([]);
+}
+
 function oliveaTotalSacola() {
     return oliveaObterSacola().reduce(
         (total, item) => total + item.preco * item.quantidade,

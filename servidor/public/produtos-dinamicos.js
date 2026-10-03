@@ -285,14 +285,25 @@ function inicializarInteracaoCards(container) {
         if (imagens.length === 0) return;
 
         // Pré-carrega as fotos extras desse card (além da primeira,
-        // que já carrega normal com a página) assim que o card
-        // aparece — assim, ao clicar na seta, a troca é instantânea
-        // em vez de esperar o celular baixar a imagem naquela hora.
+        // que já carrega normal com a página) — mas SÓ depois que o
+        // navegador estiver "ocioso" (requestIdleCallback), pra não
+        // competir pela conexão com as imagens principais que ainda
+        // estão aparecendo na tela. Isso evita o efeito de "uma
+        // imagem demorando mais" que acontecia quando tudo baixava
+        // ao mesmo tempo, sobrecarregando a conexão no celular.
         if (imagens.length > 1) {
-            imagens.slice(1).forEach((url) => {
-                const preCarregador = new Image();
-                preCarregador.src = url;
-            });
+            const preCarregarExtras = () => {
+                imagens.slice(1).forEach((url) => {
+                    const preCarregador = new Image();
+                    preCarregador.src = url;
+                });
+            };
+
+            if ("requestIdleCallback" in window) {
+                requestIdleCallback(preCarregarExtras, { timeout: 2000 });
+            } else {
+                setTimeout(preCarregarExtras, 800);
+            }
         }
 
         let indiceAtual = 0;

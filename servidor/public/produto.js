@@ -67,16 +67,24 @@ document.addEventListener("DOMContentLoaded", async function () {
             imagemPrincipal.src = produto.imagens[0];
             imagemPrincipal.alt = produto.nome;
 
-            // Pré-carrega TODAS as fotos do produto em segundo plano,
-            // assim que a página abre — assim, quando o cliente clica
-            // na seta, a imagem já está no cache do navegador e troca
-            // na hora, em vez de precisar baixar ali na hora do clique
-            // (o que no celular, com internet mais lenta, fazia parecer
-            // que era preciso clicar várias vezes pra funcionar).
-            produto.imagens.forEach((url) => {
-                const preCarregador = new Image();
-                preCarregador.src = url;
-            });
+            // Pré-carrega as fotos extras do produto (além da primeira,
+            // que já é a que aparece na tela) em segundo plano — mas só
+            // depois que o navegador estiver "ocioso", pra não competir
+            // pela conexão com a imagem principal que o cliente já está
+            // vendo. Assim, quando ele clica na seta, a imagem já está
+            // no cache e troca na hora.
+            const preCarregarExtras = () => {
+                produto.imagens.slice(1).forEach((url) => {
+                    const preCarregador = new Image();
+                    preCarregador.src = url;
+                });
+            };
+
+            if ("requestIdleCallback" in window) {
+                requestIdleCallback(preCarregarExtras, { timeout: 2000 });
+            } else {
+                setTimeout(preCarregarExtras, 800);
+            }
 
             function irParaImagem(index) {
                 const total = produto.imagens.length;

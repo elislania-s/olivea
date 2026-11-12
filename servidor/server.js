@@ -27,7 +27,7 @@ const { router: adminAuthRouter } = require("./admin-auth");
 const produtosRotas = require("./produtos-rotas");
 const freteRotas = require("./frete-rotas");
 const supabase = require("./db");
-const { enviarEmailNovoPedido } = require("./email");
+const { enviarEmailNovoPedido, enviarEmailConfirmacaoCliente } = require("./email");
 const { router: reservasRotas, limparItens, tokenValido } = require("./reservas-rotas");
 
 const app = express();
@@ -513,13 +513,19 @@ app.post("/api/webhook-infinitepay", async (req, res) => {
             }
         }
 
-        // 4) Avisa por email (só na primeira vez, pra não repetir)
-        if (primeiraVez) {
-            await enviarEmailNovoPedido(pedidoAtualizado);
-        }
-
-        // Responder rápido (idealmente em menos de 1 segundo) com 200.
+        // Responder rápido (idealmente em menos de 1 segundo) com 200 —
+        // os emails abaixo são enviados DEPOIS, sem atrasar a resposta.
         res.sendStatus(200);
+
+        // 4) Emails (só na primeira vez, pra não repetir):
+        //    aviso pra loja + confirmação pra cliente.
+        //    Um falhar não impede o outro (cada um trata o próprio erro).
+        if (primeiraVez) {
+            await Promise.all([
+                enviarEmailNovoPedido(pedidoAtualizado),
+                enviarEmailConfirmacaoCliente(pedidoAtualizado)
+            ]);
+        }
 
     } catch (erro) {
         console.error("Erro no webhook InfinitePay:", erro);

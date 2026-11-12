@@ -25,6 +25,12 @@
 
 const OLIVEA_CARRINHO_CHAVE = "olivea_sacola";
 
+// Chaves auxiliares (guardadas no navegador do cliente)
+const OLIVEA_TOKEN_CHAVE = "olivea_token";               // identifica este navegador nas reservas
+const OLIVEA_EXPIRA_CHAVE = "olivea_checkout_expira";    // até quando os itens estão reservados
+const OLIVEA_PEDIDO_CHAVE = "olivea_pedido_pendente";    // pedido que foi pra InfinitePay
+const OLIVEA_AVISO_CHAVE = "olivea_aviso";               // mensagem pra mostrar na sacola
+
 function oliveaObterSacola() {
     try {
         return JSON.parse(localStorage.getItem(OLIVEA_CARRINHO_CHAVE)) || [];
@@ -78,6 +84,146 @@ function oliveaLimparSacola() {
     oliveaSalvarSacola([]);
 }
 
+// ---------------------------------------------------------------
+// TOKEN DO NAVEGADOR
+// Um código aleatório que identifica este cliente na hora de
+// "segurar" as peças no estoque. Não tem dado pessoal nenhum.
+// ---------------------------------------------------------------
+function oliveaToken() {
+    let token = null;
+
+    try {
+        token = localStorage.getItem(OLIVEA_TOKEN_CHAVE);
+    } catch (erro) { /* ignora */ }
+
+    if (!token || token.length < 16) {
+        token = (window.crypto && crypto.randomUUID)
+            ? crypto.randomUUID()
+            : Date.now().toString(36) + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+
+        try {
+            localStorage.setItem(OLIVEA_TOKEN_CHAVE, token);
+        } catch (erro) { /* ignora */ }
+    }
+
+    return token;
+}
+
+// ---------------------------------------------------------------
+// AVISO PRA MOSTRAR NA SACOLA (ex.: "o tempo acabou")
+// Lê e já apaga, pra aparecer uma vez só.
+// ---------------------------------------------------------------
+function oliveaGuardarAviso(texto) {
+    try {
+        localStorage.setItem(OLIVEA_AVISO_CHAVE, texto);
+    } catch (erro) { /* ignora */ }
+}
+
+function oliveaLerAviso() {
+    try {
+        const texto = localStorage.getItem(OLIVEA_AVISO_CHAVE);
+        localStorage.removeItem(OLIVEA_AVISO_CHAVE);
+        return texto;
+    } catch (erro) {
+        return null;
+    }
+}
+
+// ---------------------------------------------------------------
+// COMPRA CONCLUÍDA
+// Esvazia a sacola e apaga os controles do checkout.
+// ---------------------------------------------------------------
+function oliveaConcluirCompra() {
+    try {
+        localStorage.removeItem(OLIVEA_EXPIRA_CHAVE);
+        localStorage.removeItem(OLIVEA_PEDIDO_CHAVE);
+    } catch (erro) { /* ignora */ }
+
+    oliveaLimparSacola();
+}
+
+// ---------------------------------------------------------------
+// TEMPO DO CHECKOUT ACABOU
+// Se passou do prazo (20 min no checkout), os itens saem da
+// sacola — em qualquer página que o cliente abrir depois.
+// ---------------------------------------------------------------
+function oliveaVerificarExpiracao() {
+    let expira = 0;
+
+    try {
+        expira = Number(localStorage.getItem(OLIVEA_EXPIRA_CHAVE)) || 0;
+    } catch (erro) {
+        return false;
+    }
+
+    if (!expira || Date.now() < expira) return false;
+
+    try {
+        localStorage.removeItem(OLIVEA_EXPIRA_CHAVE);
+    } catch (erro) { /* ignora */ }
+
+    if (oliveaObterSacola().length > 0) {
+        oliveaSalvarSacola([]);
+        oliveaGuardarAviso(
+            "O tempo para finalizar o pedido acabou e os itens saíram da sua sacola, " +
+            "para ficarem disponíveis para outras pessoas. Se ainda quiser, é só adicionar de novo."
+        );
+    }
+
+    return true;
+}
+
+// ---------------------------------------------------------------
+// PEDIDO JÁ PAGO? (plano B)
+// Se o cliente pagou mas NÃO voltou pela página de sucesso, a
+// sacola continuaria cheia. Aqui o site pergunta ao servidor se
+// o último pedido foi aprovado e, se foi, tira só aqueles itens.
+// ---------------------------------------------------------------
+async function oliveaVerificarPedidoPendente() {
+    let pendente = null;
+
+    try {
+        pendente = JSON.parse(localStorage.getItem(OLIVEA_PEDIDO_CHAVE));
+    } catch (erro) {
+        pendente = null;
+    }
+
+    if (!pendente || !pendente.id) return;
+
+    try {
+        const resposta = await fetch("/api/pedido-status/" + encodeURIComponent(pendente.id));
+
+        if (resposta.status === 404) {
+            localStorage.removeItem(OLIVEA_PEDIDO_CHAVE);
+            return;
+        }
+
+        if (!resposta.ok) return;
+
+        const dados = await resposta.json();
+
+        if (dados.status !== "aprovado") return;
+
+        // Tira da sacola só o que foi comprado nesse pedido
+        const sacola = oliveaObterSacola();
+
+        (pendente.itens || []).forEach((comprado) => {
+            const item = sacola.find((i) => String(i.id) === String(comprado.id));
+            if (item) item.quantidade -= comprado.quantidade;
+        });
+
+        oliveaSalvarSacola(sacola.filter((item) => item.quantidade > 0));
+
+        localStorage.removeItem(OLIVEA_PEDIDO_CHAVE);
+        localStorage.removeItem(OLIVEA_EXPIRA_CHAVE);
+
+        if (typeof sacolaRenderizar === "function") sacolaRenderizar();
+
+    } catch (erro) {
+        console.error("[Olivea] Não foi possível conferir o pedido:", erro);
+    }
+}
+
 function oliveaTotalSacola() {
     return oliveaObterSacola().reduce(
         (total, item) => total + item.preco * item.quantidade,
@@ -122,3 +268,7 @@ function oliveaAtualizarBolinha() {
 }
 
 document.addEventListener("DOMContentLoaded", oliveaAtualizarBolinha);
+
+// Roda assim que o arquivo carrega (antes das páginas desenharem a sacola)
+oliveaVerificarExpiracao();
+oliveaVerificarPedidoPendente();

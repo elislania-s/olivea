@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         produto = await resposta.json();
 
-        document.title = "Olivea — " + produto.nome;
+        document.title = produto.nome + " | Olivea";
         document.body.classList.add("produto-pronto");
 
         document.getElementById("produtoCategoriaTopo").textContent =
@@ -138,8 +138,8 @@ document.addEventListener("DOMContentLoaded", async function () {
             });
 
             btnMais.addEventListener("click", () => {
-                const max = produto.estoque || 99;
-                inputQtd.value = Math.min(max, parseInt(inputQtd.value || "1", 10) + 1);
+                // O limite real de estoque é conferido pelo servidor no checkout
+                inputQtd.value = Math.min(99, parseInt(inputQtd.value || "1", 10) + 1);
             });
         }
     } catch (erro) {
@@ -158,7 +158,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         const btnFecharMini = document.querySelector(".mini-sacola-fechar");
         let miniSacolaTimer = null;
 
-        if (produto.estoque <= 0 && btnAdicionar) {
+        if (produto.esgotado && btnAdicionar) {
             btnAdicionar.textContent = "PRODUTO ESGOTADO";
             btnAdicionar.disabled = true;
         }

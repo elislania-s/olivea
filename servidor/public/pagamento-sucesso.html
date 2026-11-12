@@ -5,13 +5,14 @@
     <meta charset="UTF-8">
     <meta name="format-detection" content="telephone=no">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Olivea — Pedido confirmado</title>
+    <title>Pedido confirmado</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=Montserrat:wght@500&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="pagamento-status.css">
+    <link rel="icon" type="image/png" href="logo.png">
 </head>
 
 <body>
@@ -50,9 +51,10 @@
 
     <script src="carrinho.js"></script>
     <script>
-        // Compra concluída com sucesso — esvazia a sacola do cliente.
-        if (typeof oliveaLimparSacola === "function") {
-            oliveaLimparSacola();
+        // Compra concluída com sucesso — esvazia a sacola do cliente
+        // e apaga os controles do checkout (contador e pedido pendente).
+        if (typeof oliveaConcluirCompra === "function") {
+            oliveaConcluirCompra();
         }
     </script>
 

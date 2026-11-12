@@ -28,6 +28,7 @@ const produtosRotas = require("./produtos-rotas");
 const freteRotas = require("./frete-rotas");
 const supabase = require("./db");
 const { enviarEmailNovoPedido } = require("./email");
+const { router: reservasRotas, limparItens, tokenValido } = require("./reservas-rotas");
 
 const app = express();
 
@@ -57,6 +58,7 @@ app.use(session({
 app.use(adminAuthRouter);
 app.use(produtosRotas);
 app.use(freteRotas);
+app.use(reservasRotas);
 
 // Serve o próprio site (tudo que estiver dentro da pasta "public/")
 app.use(express.static(path.join(__dirname, "public")));
@@ -155,15 +157,62 @@ app.post("/api/criar-pedido-pix", async (req, res) => {
    (chamado pelo checkout.js do site)
 ================================================ */
 
-app.post("/api/criar-checkout-infinitepay", async (req, res) => {
+// Depois que o cliente clica em "Ir para o pagamento", os itens
+// ficam segurados por mais este tempo (pra ele conseguir pagar
+// o Pix/cartão na tela da InfinitePay sem perder a peça).
+const MINUTOS_PAGAMENTO = 30;
+
+// Endereço do site que a InfinitePay usa pra mandar o cliente de
+// volta depois de pagar. Usa o endereço em que o cliente está
+// navegando (se for um dos permitidos), senão o URL_PUBLICA.
+// Isso evita a página de sucesso abrir em OUTRO endereço e não
+// conseguir esvaziar a sacola (cada endereço tem sua própria sacola).
+function urlBaseDoSite(req) {
+    const limpar = (url) => String(url || "").trim().replace(/\/+$/, "");
+
+    const padrao = limpar(process.env.URL_PUBLICA);
+    const origem = limpar(req.get("origin"));
+    const permitidas = String(process.env.URLS_PERMITIDAS || "")
+        .split(",")
+        .map(limpar)
+        .filter(Boolean);
+
+    if (origem && (origem === padrao || permitidas.includes(origem))) {
+        return origem;
+    }
+
+    return padrao;
+}
+
+async function liberarReserva(token) {
+    if (!tokenValido(token)) return;
 
     try {
-        const itensRecebidos = req.body.itens || [];
+        await supabase
+            .from("reservas")
+            .update({ status: "cancelada" })
+            .eq("token", token)
+            .eq("status", "ativa");
+    } catch (erro) {
+        console.error("Erro ao liberar reserva:", erro);
+    }
+}
+
+app.post("/api/criar-checkout-infinitepay", async (req, res) => {
+
+    const token = req.body.token;
+
+    try {
+        const itensRecebidos = limparItens(req.body.itens);
         const cliente = req.body.cliente || {};
         const frete = req.body.frete || null;
 
         if (itensRecebidos.length === 0) {
             return res.status(400).json({ erro: "Sacola vazia" });
+        }
+
+        if (!tokenValido(token)) {
+            return res.status(400).json({ erro: "Sessão inválida. Recarregue a página." });
         }
 
         const camposObrigatorios = [
@@ -177,17 +226,66 @@ app.post("/api/criar-checkout-infinitepay", async (req, res) => {
             }
         }
 
+        // 0) Confere o estoque e SEGURA os itens (de forma atômica:
+        //    se duas pessoas tentarem a última peça juntas, só uma leva).
+        const { data: reserva, error: erroReserva } = await supabase.rpc("reservar_itens", {
+            p_token: token,
+            p_itens: itensRecebidos,
+            p_minutos: MINUTOS_PAGAMENTO,
+            p_renovar: true
+        });
+
+        if (erroReserva) throw erroReserva;
+
+        if (reserva.ajustes && reserva.ajustes.length > 0) {
+            return res.status(409).json({
+                erro: "itens_indisponiveis",
+                ajustes: reserva.ajustes
+            });
+        }
+
+        // Nome e preço vêm do BANCO, não do navegador (o navegador
+        // poderia ter mexido no preço).
+        const { data: produtosDb, error: erroProdutos } = await supabase
+            .from("produtos")
+            .select("id, nome, preco, imagens")
+            .in("id", itensRecebidos.map((item) => item.id));
+
+        if (erroProdutos) throw erroProdutos;
+
+        const itensConfiaveis = itensRecebidos.map((item) => {
+            const produto = (produtosDb || []).find((p) => String(p.id) === item.id);
+            if (!produto) return null;
+
+            return {
+                id: item.id,
+                nome: produto.nome,
+                preco: Number(produto.preco),
+                imagem: produto.imagens && produto.imagens[0] ? produto.imagens[0] : null,
+                quantidade: item.quantidade
+            };
+        });
+
+        if (itensConfiaveis.some((item) => item === null)) {
+            await liberarReserva(token);
+            return res.status(409).json({
+                erro: "itens_indisponiveis",
+                ajustes: itensRecebidos.map((item) => ({
+                    id: item.id, pedido: item.quantidade, reservado: 0, motivo: "estoque"
+                }))
+            });
+        }
+
         // Monta os itens no formato que a InfinitePay espera
         // (valores em CENTAVOS, não em reais)
-        const itensInfinitePay = itensRecebidos.map((item) => ({
+        const itensInfinitePay = itensConfiaveis.map((item) => ({
             description: String(item.nome).slice(0, 100),
-            quantity: Number(item.quantidade) || 1,
-            price: Math.round(Number(item.preco) * 100)
+            quantity: item.quantidade,
+            price: Math.round(item.preco * 100)
         }));
 
         // Subtotal só dos produtos (sem frete) — usado pra decidir
-        // se o frete é grátis. Calculado aqui no servidor, não
-        // confiando só no que o navegador mandou.
+        // se o frete é grátis.
         const subtotalProdutos = itensInfinitePay.reduce(
             (soma, item) => soma + (item.price * item.quantity) / 100,
             0
@@ -226,7 +324,7 @@ app.post("/api/criar-checkout-infinitepay", async (req, res) => {
                 bairro: cliente.bairro,
                 cidade: cliente.cidade,
                 estado: cliente.estado,
-                itens: itensRecebidos,
+                itens: itensConfiaveis,
                 total: totalReais,
                 frete_servico: frete
                     ? (frete.nome ? `${frete.servico} - ${frete.nome}` : frete.servico)
@@ -239,8 +337,17 @@ app.post("/api/criar-checkout-infinitepay", async (req, res) => {
 
         if (erroPedido) throw erroPedido;
 
+        // Liga a reserva ao pedido (quando o pagamento for aprovado,
+        // a reserva vira venda e o estoque é baixado de verdade).
+        await supabase
+            .from("reservas")
+            .update({ pedido_id: String(pedido.id) })
+            .eq("token", token)
+            .eq("status", "ativa");
+
         // 2) Cria o link de checkout na InfinitePay
-        const urlPublica = process.env.URL_PUBLICA;
+        const urlPublica = String(process.env.URL_PUBLICA || "").replace(/\/+$/, "");
+        const urlSite = urlBaseDoSite(req);
         const whatsappLimpo = cliente.whatsapp.replace(/\D/g, "");
 
         const payloadCheckout = {
@@ -267,7 +374,7 @@ app.post("/api/criar-checkout-infinitepay", async (req, res) => {
                 complement: cliente.complemento || ""
             },
 
-            redirect_url: urlPublica + "/pagamento-sucesso.html",
+            redirect_url: urlSite + "/pagamento-sucesso.html?pedido=" + encodeURIComponent(pedido.id),
             webhook_url: urlPublica + "/api/webhook-infinitepay"
         };
 
@@ -297,10 +404,18 @@ app.post("/api/criar-checkout-infinitepay", async (req, res) => {
             throw new Error("InfinitePay não retornou o link de pagamento");
         }
 
-        res.json({ checkout_url: checkoutUrl });
+        res.json({
+            checkout_url: checkoutUrl,
+            pedido_id: pedido.id,
+            restante_s: reserva.restante_s
+        });
 
     } catch (erro) {
         console.error("Erro ao criar checkout InfinitePay:", erro);
+
+        // Deu erro: solta os itens pra outras pessoas poderem comprar
+        await liberarReserva(token);
+
         res.status(500).json({ erro: "Erro ao criar checkout de pagamento" });
     }
 });
@@ -310,10 +425,14 @@ app.post("/api/criar-checkout-infinitepay", async (req, res) => {
    WEBHOOK — InfinitePay avisa aqui quando o
    pagamento é aprovado.
 
-   A InfinitePay só chama esse endpoint QUANDO O
-   PAGAMENTO É APROVADO (não existe um "status" no
-   corpo pra checar) — a própria chamada já é a
-   confirmação.
+   Como qualquer pessoa na internet poderia chamar
+   esse endereço e fingir um pagamento, antes de
+   aprovar o pedido o servidor PERGUNTA pra própria
+   InfinitePay se aquele pagamento é verdadeiro
+   (endpoint payment_check).
+
+   Ao aprovar, baixa o estoque (uma única vez por
+   pedido, mesmo que a InfinitePay reenvie o aviso).
 ================================================ */
 
 app.post("/api/webhook-infinitepay", async (req, res) => {
@@ -322,23 +441,84 @@ app.post("/api/webhook-infinitepay", async (req, res) => {
         console.log("[Olivea] Webhook InfinitePay recebido:", JSON.stringify(req.body));
 
         const pedidoId = req.body.order_nsu;
+        const transacao = req.body.transaction_nsu;
+        const slug = req.body.invoice_slug || req.body.slug;
 
-        if (pedidoId) {
+        if (!pedidoId) {
+            return res.sendStatus(200);
+        }
 
-            const { data: pedidoAtualizado } = await supabase
-                .from("pedidos")
-                .update({ status: "aprovado" })
-                .eq("id", pedidoId)
-                .select()
-                .single();
+        if (!transacao || !slug) {
+            console.error("[Olivea] Webhook sem transaction_nsu/invoice_slug — não dá pra confirmar o pagamento. Pedido:", pedidoId);
+            return res.sendStatus(200);
+        }
 
-            if (pedidoAtualizado) {
-                await enviarEmailNovoPedido(pedidoAtualizado);
+        // 1) Confirma com a InfinitePay que o pagamento é real
+        const respostaCheck = await fetch("https://api.checkout.infinitepay.io/payment_check", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "accept": "application/json" },
+            body: JSON.stringify({
+                handle: process.env.INFINITEPAY_HANDLE,
+                order_nsu: String(pedidoId),
+                transaction_nsu: transacao,
+                slug: slug
+            })
+        });
+
+        if (!respostaCheck.ok) {
+            console.error("[Olivea] payment_check falhou (status " + respostaCheck.status + ") — pedido " + pedidoId);
+            return res.sendStatus(400); // a InfinitePay tenta de novo depois
+        }
+
+        const check = await respostaCheck.json();
+
+        if (check.paid !== true) {
+            console.warn("[Olivea] payment_check diz que NÃO está pago — pedido " + pedidoId, JSON.stringify(check));
+            return res.sendStatus(200);
+        }
+
+        // 2) Marca o pedido como aprovado
+        const { data: pedidoAtualizado } = await supabase
+            .from("pedidos")
+            .update({ status: "aprovado" })
+            .eq("id", pedidoId)
+            .select()
+            .single();
+
+        if (!pedidoAtualizado) {
+            console.error("[Olivea] Webhook de pedido que não existe:", pedidoId);
+            return res.sendStatus(200);
+        }
+
+        // 3) Baixa o estoque (só na primeira vez)
+        let primeiraVez = true;
+
+        const { data: baixa, error: erroBaixa } = await supabase.rpc("baixar_estoque_pedido", {
+            p_pedido_id: String(pedidoId)
+        });
+
+        if (erroBaixa) {
+            console.error(
+                "[Olivea] ERRO ao baixar o estoque do pedido " + pedidoId +
+                " — ajuste manualmente no admin:", erroBaixa
+            );
+        } else {
+            primeiraVez = baixa && baixa.baixado === true;
+
+            if (baixa && baixa.faltas && baixa.faltas.length > 0) {
+                console.warn(
+                    "[Olivea] ATENÇÃO: pedido " + pedidoId +
+                    " vendeu mais do que havia em estoque:", JSON.stringify(baixa.faltas)
+                );
             }
         }
 
+        // 4) Avisa por email (só na primeira vez, pra não repetir)
+        if (primeiraVez) {
+            await enviarEmailNovoPedido(pedidoAtualizado);
+        }
+
         // Responder rápido (idealmente em menos de 1 segundo) com 200.
-        // Se responder com erro, a InfinitePay tenta reenviar.
         res.sendStatus(200);
 
     } catch (erro) {

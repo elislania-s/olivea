@@ -1,10 +1,27 @@
+// Mensagem guardada pelo checkout (ex.: "o tempo acabou", "peça esgotou").
+// Lida uma vez ao abrir a página e mantida na tela enquanto ela estiver aberta.
+const avisoSacola = oliveaLerAviso();
+
+function sacolaHtmlAviso() {
+    if (!avisoSacola) return "";
+
+    const texto = String(avisoSacola).replace(/</g, "&lt;");
+
+    return `
+        <div style="margin:0 0 20px;padding:14px 18px;background:#F3EDE3;color:#3F3026;
+                    border:1px solid #E0D6C6;border-radius:6px;font-size:14px;line-height:1.5;">
+            ${texto}
+        </div>
+    `;
+}
+
 function sacolaRenderizar() {
 
     const wrapper = document.getElementById("sacolaConteudoWrapper");
     const itens = oliveaObterSacola();
 
     if (itens.length === 0) {
-        wrapper.innerHTML = `
+        wrapper.innerHTML = sacolaHtmlAviso() + `
             <div class="sacola-vazia">
                 Sua sacola está vazia. <a href="colecao.html">Ver a coleção</a>
             </div>
@@ -41,7 +58,7 @@ function sacolaRenderizar() {
 
     const total = oliveaTotalSacola();
 
-    wrapper.innerHTML = `
+    wrapper.innerHTML = sacolaHtmlAviso() + `
         <div class="sacola-conteudo">
 
             <div class="sacola-lista">
@@ -72,7 +89,7 @@ function sacolaRenderizar() {
                 </a>
 
                 <div class="sacola-seguranca">
-                    Pagamento processado com segurança pelo Mercado Pago
+                    Pagamento processado com segurança pela InfinitePay
                 </div>
 
             </aside>

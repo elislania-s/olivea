@@ -32,6 +32,13 @@ const upload = multer({
    PÚBLICAS
 ================================================ */
 
+// Nunca manda a QUANTIDADE do estoque pro navegador do cliente —
+// só avisa se o produto está esgotado ou não.
+function paraPublico(produto) {
+    const { estoque, ...resto } = produto;
+    return { ...resto, esgotado: Number(estoque) <= 0 };
+}
+
 router.get("/api/produtos", async (req, res) => {
 
     try {
@@ -53,7 +60,7 @@ router.get("/api/produtos", async (req, res) => {
 
         if (error) throw error;
 
-        res.json(data);
+        res.json(data.map(paraPublico));
 
     } catch (erro) {
         console.error("Erro ao listar produtos:", erro);
@@ -75,7 +82,7 @@ router.get("/api/produtos/:id", async (req, res) => {
             return res.status(404).json({ erro: "Produto não encontrado" });
         }
 
-        res.json(data);
+        res.json(paraPublico(data));
 
     } catch (erro) {
         console.error("Erro ao buscar produto:", erro);

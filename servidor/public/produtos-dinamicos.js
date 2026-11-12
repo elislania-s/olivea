@@ -227,7 +227,7 @@ function montarTitulo(nome, tag, centralizado) {
 function criarCardColecao(produto) {
 
     const imagens = (produto.imagens && produto.imagens.length) ? produto.imagens : [""];
-    const esgotado = Number(produto.estoque) <= 0;
+    const esgotado = produto.esgotado === true;
 
     return `
         <article class="product-card" data-category="${produto.categoria}" data-price="${produto.preco}">

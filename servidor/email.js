@@ -1,31 +1,38 @@
 /* ======================================
    EMAILS DO PEDIDO
 
-   Usa o Gmail da própria Olivea pra mandar,
-   toda vez que um pedido for aprovado:
+   Toda vez que um pedido é aprovado, manda:
    1) um aviso pro email DA LOJA;
    2) a confirmação de pedido recebido pro
       email DA CLIENTE.
 
-   Pra funcionar, precisa no .env:
+   DOIS JEITOS DE ENVIAR (o código escolhe sozinho):
 
-   EMAIL_REMETENTE=contatobyolivea@gmail.com
-   EMAIL_SENHA_APP=xxxx xxxx xxxx xxxx
+   A) RESEND (recomendado — evita cair no spam)
+      Precisa de um domínio próprio verificado no Resend.
+      Variáveis no Render (Environment):
+        RESEND_API_KEY=re_xxxxxxxx
+        EMAIL_FROM=pedidos@seudominio.com.br
+        EMAIL_DESTINO=emaildaloja@gmail.com   (pra onde vai o aviso de pedido)
 
-   IMPORTANTE: EMAIL_SENHA_APP NÃO é a senha
-   normal da conta Google — é uma "senha de
-   app" gerada especificamente pra isso.
-   Veja como gerar em:
-   https://myaccount.google.com/apppasswords
-   (precisa ter a verificação em duas etapas
-   ativada na conta Google primeiro).
+   B) GMAIL (usado se o Resend não estiver configurado)
+        EMAIL_REMETENTE=contatobyolivea@gmail.com
+        EMAIL_SENHA_APP=xxxx xxxx xxxx xxxx
+        EMAIL_DESTINO=(opcional) outro email pra receber os avisos
+      IMPORTANTE: EMAIL_SENHA_APP NÃO é a senha normal do Google, é uma
+      "senha de app": https://myaccount.google.com/apppasswords
+      (exige verificação em duas etapas ativada na conta Google).
+      Atenção: emails enviados por Gmail comum costumam cair no spam
+      das clientes. Por isso o ideal é o jeito A.
 ====================================== */
 
 const nodemailer = require("nodemailer");
 
+const usaResend = Boolean(process.env.RESEND_API_KEY && process.env.EMAIL_FROM);
+
 let transportador = null;
 
-if (process.env.EMAIL_REMETENTE && process.env.EMAIL_SENHA_APP) {
+if (!usaResend && process.env.EMAIL_REMETENTE && process.env.EMAIL_SENHA_APP) {
     transportador = nodemailer.createTransport({
         service: "gmail",
         auth: {
@@ -33,16 +40,74 @@ if (process.env.EMAIL_REMETENTE && process.env.EMAIL_SENHA_APP) {
             pass: process.env.EMAIL_SENHA_APP
         }
     });
+}
+
+const emailConfigurado = usaResend || Boolean(transportador);
+
+if (usaResend) {
+    console.log("[Olivea] Emails: enviando pelo Resend (" + process.env.EMAIL_FROM + ").");
+} else if (transportador) {
+    console.log("[Olivea] Emails: enviando pelo Gmail. Dica: configure o Resend pra não cair no spam.");
 } else {
     console.error(
-        "\n[Olivea] EMAIL_REMETENTE e/ou EMAIL_SENHA_APP não configurados " +
-        "no .env — os emails de novo pedido não serão enviados.\n"
+        "\n[Olivea] Nenhum envio de email configurado (RESEND_API_KEY + EMAIL_FROM, " +
+        "ou EMAIL_REMETENTE + EMAIL_SENHA_APP) — os emails de pedido não serão enviados.\n"
     );
 }
 
+// Endereço que aparece como remetente
+function enderecoRemetente() {
+    return usaResend ? process.env.EMAIL_FROM : process.env.EMAIL_REMETENTE;
+}
+
+// Pra onde vai o aviso de pedido (a loja) e onde caem as respostas da cliente
+function emailDaLoja() {
+    return process.env.EMAIL_DESTINO || process.env.EMAIL_REMETENTE || process.env.EMAIL_FROM;
+}
+
+// Envia pelo caminho configurado. Lança erro se falhar.
+async function enviarEmail({ nomeRemetente, para, responderPara, assunto, texto, html }) {
+
+    const de = `"${nomeRemetente}" <${enderecoRemetente()}>`;
+
+    if (usaResend) {
+        const resposta = await fetch("https://api.resend.com/emails", {
+            method: "POST",
+            headers: {
+                "Authorization": "Bearer " + process.env.RESEND_API_KEY,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                from: de,
+                to: [para],
+                reply_to: responderPara || undefined,
+                subject: assunto,
+                text: texto,
+                html: html || undefined
+            })
+        });
+
+        if (!resposta.ok) {
+            throw new Error("Resend recusou o envio (" + resposta.status + "): " + await resposta.text());
+        }
+
+        return;
+    }
+
+    await transportador.sendMail({
+        from: de,
+        to: para,
+        replyTo: responderPara || undefined,
+        subject: assunto,
+        text: texto,
+        html: html || undefined
+    });
+}
+
+
 async function enviarEmailNovoPedido(pedido) {
 
-    if (!transportador) return;
+    if (!emailConfigurado) return;
 
     const listaItens = pedido.itens.map((item) =>
         `- ${item.quantidade}x ${item.nome} — R$ ${Number(item.preco).toFixed(2).replace(".", ",")}`
@@ -75,11 +140,11 @@ Número do pedido (id interno): ${pedido.id}
 `.trim();
 
     try {
-        await transportador.sendMail({
-            from: `"Olivea — Pedidos" <${process.env.EMAIL_REMETENTE}>`,
-            to: process.env.EMAIL_DESTINO || process.env.EMAIL_REMETENTE,
-            subject: `Novo pedido — ${pedido.nome_completo} — R$ ${Number(pedido.total).toFixed(2).replace(".", ",")}`,
-            text: corpo
+        await enviarEmail({
+            nomeRemetente: "Olivea — Pedidos",
+            para: emailDaLoja(),
+            assunto: `Novo pedido — ${pedido.nome_completo} — R$ ${Number(pedido.total).toFixed(2).replace(".", ",")}`,
+            texto: corpo
         });
 
         console.log("[Olivea] Aviso de novo pedido enviado para a loja (pedido " + pedido.id + ")");
@@ -110,7 +175,7 @@ function esc(texto) {
 
 async function enviarEmailConfirmacaoCliente(pedido) {
 
-    if (!transportador) return;
+    if (!emailConfigurado) return;
 
     const emailCliente = String(pedido.email || "").trim();
 
@@ -138,7 +203,7 @@ async function enviarEmailConfirmacaoCliente(pedido) {
     const texto = `
 ${saudacao}
 
-Recebemos o seu pedido e o pagamento foi aprovado. Muito obrigada por escolher a Olivea! 🤍
+Recebemos o seu pedido e o pagamento foi aprovado. Muito obrigada por escolher a Olivea!
 
 PEDIDO Nº ${pedido.id}
 
@@ -177,7 +242,7 @@ Equipe Olivea
     </div>
 
     <h1 style="font-family:Georgia,'Times New Roman',serif;font-size:22px;color:#3F3026;margin:0 0 12px;font-weight:600;">
-      ${esc(saudacao)} Recebemos o seu pedido 🤍
+      ${esc(saudacao)} Recebemos o seu pedido
     </h1>
 
     <p style="color:#3F3026;font-size:15px;line-height:1.6;margin:0 0 20px;">
@@ -221,13 +286,14 @@ Equipe Olivea
 `;
 
     try {
-        await transportador.sendMail({
-            from: `"Olivea" <${process.env.EMAIL_REMETENTE}>`,
-            to: emailCliente,
+        await enviarEmail({
+            nomeRemetente: "Olivea",
+            para: emailCliente,
             // Se a cliente responder o email, a resposta cai na caixa da loja
-            replyTo: process.env.EMAIL_DESTINO || process.env.EMAIL_REMETENTE,
-            subject: `Recebemos o seu pedido na Olivea 🤍 (nº ${pedido.id})`,
-            text: texto,
+            responderPara: emailDaLoja(),
+            // Sem emoji nem pontuação exagerada no assunto: filtros de spam não gostam
+            assunto: `Pedido nº ${pedido.id} confirmado — Olivea`,
+            texto,
             html
         });
 

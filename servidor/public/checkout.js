@@ -86,7 +86,7 @@ document.addEventListener("DOMContentLoaded", () => {
             conviteValido = dados.valido === true;
 
             if (!conviteValido) {
-                localStorage.removeItem(OLIVEA_CONVITE_CHAVE);
+                oliveaDescartarConvite();
             }
         } catch (erro) {
             conviteValido = false;

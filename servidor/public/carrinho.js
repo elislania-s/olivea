@@ -227,19 +227,33 @@ async function oliveaVerificarPedidoPendente() {
 
 // ---------------------------------------------------------------
 // CONVITE DE FRETE GRÁTIS (link secreto)
-// Quem abre o site por um link com  ?convite=SEGREDO  fica com o
-// convite guardado neste navegador. O servidor é quem confere se
-// o segredo é verdadeiro. Depois de guardar, o "?convite=..." some
-// do endereço pra não ficar aparecendo por aí.
+// Quem abre o site por um link com  ?convite=SEGREDO  fica com frete
+// grátis ENQUANTO ESTIVER NAQUELA VISITA. O convite fica guardado só
+// na sessão do navegador: ao fechar a aba/o navegador, ele some, e
+// quem voltar pelo endereço normal do site já encontra o frete normal.
+// O servidor é quem confere se o segredo é verdadeiro.
+// Depois de guardar, o "?convite=..." some do endereço.
+//
+// Pra DESLIGAR o convite na hora (ex.: nos seus testes), abra o site
+// com  ?convite=sair
 // ---------------------------------------------------------------
 function oliveaCapturarConvite() {
+    // Limpeza: uma versão anterior guardava o convite de forma permanente
+    try {
+        localStorage.removeItem(OLIVEA_CONVITE_CHAVE);
+    } catch (erro) { /* ignora */ }
+
     try {
         const parametros = new URLSearchParams(window.location.search);
         const convite = parametros.get("convite");
 
-        if (!convite) return;
+        if (convite === null) return;
 
-        localStorage.setItem(OLIVEA_CONVITE_CHAVE, convite.slice(0, 200));
+        if (convite.trim() === "" || convite.trim().toLowerCase() === "sair") {
+            sessionStorage.removeItem(OLIVEA_CONVITE_CHAVE);
+        } else {
+            sessionStorage.setItem(OLIVEA_CONVITE_CHAVE, convite.trim().slice(0, 200));
+        }
 
         parametros.delete("convite");
         const resto = parametros.toString();
@@ -254,10 +268,16 @@ function oliveaCapturarConvite() {
 
 function oliveaObterConvite() {
     try {
-        return localStorage.getItem(OLIVEA_CONVITE_CHAVE) || "";
+        return sessionStorage.getItem(OLIVEA_CONVITE_CHAVE) || "";
     } catch (erro) {
         return "";
     }
+}
+
+function oliveaDescartarConvite() {
+    try {
+        sessionStorage.removeItem(OLIVEA_CONVITE_CHAVE);
+    } catch (erro) { /* ignora */ }
 }
 
 function oliveaTotalSacola() {

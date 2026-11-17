@@ -118,8 +118,13 @@ async function enviarEmailNovoPedido(pedido) {
         ? `Frete escolhido: ${pedido.frete_servico} — R$ ${Number(pedido.frete_valor).toFixed(2).replace(".", ",")}\n`
         : "";
 
+    // Pedido com frete grátis por convite: lembra que a postagem é por conta da loja
+    const avisoCortesia = String(pedido.frete_servico || "").includes("(cortesia)")
+        ? "*** FRETE GRÁTIS POR CONVITE — a cliente não pagou o frete, a postagem é por sua conta ***\n\n"
+        : "";
+
     const corpo = `
-Novo pedido aprovado na Olivea! 🎉
+${avisoCortesia}Novo pedido aprovado na Olivea! 🎉
 
 CLIENTE
 Nome: ${pedido.nome_completo}

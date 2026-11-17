@@ -39,8 +39,20 @@ document.addEventListener("DOMContentLoaded", async function () {
             produto.categoria.toUpperCase();
         document.getElementById("produtoNome").textContent = produto.nome;
         document.getElementById("produtoDescricao").textContent = produto.descricao;
-        document.getElementById("produtoPreco").textContent =
+        const elementoPreco = document.getElementById("produtoPreco");
+        elementoPreco.textContent =
             "R$ " + Number(produto.preco).toFixed(2).replace(".", ",");
+
+        // Texto de parcelamento ao lado do preço.
+        // IMPORTANTE: tem que ser igual ao que está configurado na InfinitePay.
+        // Se mudar a condição lá, mude a frase aqui.
+        const TEXTO_PARCELAMENTO = "ou em até 4x sem juros";
+
+        const textoParcelas = document.createElement("span");
+        textoParcelas.textContent = TEXTO_PARCELAMENTO;
+        textoParcelas.style.cssText =
+            "margin-left:10px;font-size:13px;font-weight:400;color:#7A6A5A;white-space:nowrap;";
+        elementoPreco.appendChild(textoParcelas);
 
     } catch (erro) {
         console.error("[Olivea] Erro ao carregar os dados do produto:", erro);

@@ -29,6 +29,7 @@ const freteRotas = require("./frete-rotas");
 const supabase = require("./db");
 const { enviarEmailNovoPedido, enviarEmailConfirmacaoCliente } = require("./email");
 const { router: reservasRotas, limparItens, tokenValido } = require("./reservas-rotas");
+const crypto = require("crypto");
 
 const app = express();
 
@@ -184,6 +185,33 @@ function urlBaseDoSite(req) {
     return padrao;
 }
 
+/* ------------------------------------------------
+   CONVITE DE FRETE GRÁTIS (link secreto)
+
+   No Render (Environment) crie:
+     CONVITE_FRETE_GRATIS=uma-frase-longa-e-aleatoria
+
+   Quem abrir o site por  https://SEU-SITE/?convite=uma-frase-longa-e-aleatoria
+   fica com frete grátis nas compras. Pra desligar (ou trocar a
+   pessoa que tem acesso), apague ou mude essa variável.
+   Sem a variável, o recurso fica desligado.
+------------------------------------------------ */
+function conviteConfere(valor) {
+    const segredo = String(process.env.CONVITE_FRETE_GRATIS || "").trim();
+
+    if (segredo.length < 8 || typeof valor !== "string" || valor.length === 0) {
+        return false;
+    }
+
+    const hash = (texto) => crypto.createHash("sha256").update(texto).digest();
+
+    return crypto.timingSafeEqual(hash(valor.trim()), hash(segredo));
+}
+
+app.post("/api/convite-valido", (req, res) => {
+    res.json({ valido: conviteConfere(req.body && req.body.convite) });
+});
+
 async function liberarReserva(token) {
     if (!tokenValido(token)) return;
 
@@ -290,7 +318,12 @@ app.post("/api/criar-checkout-infinitepay", async (req, res) => {
             (soma, item) => soma + (item.price * item.quantity) / 100,
             0
         );
-        const freteGratis = subtotalProdutos >= 100;
+        const conviteValido = conviteConfere(req.body.convite);
+        const freteGratisPorValor = subtotalProdutos >= 100;
+        const freteGratis = freteGratisPorValor || conviteValido;
+        // Marca no pedido quando o frete só foi grátis por causa do convite
+        // (aparece no email da loja: a postagem fica por sua conta).
+        const freteCortesia = conviteValido && !freteGratisPorValor;
 
         // Frete vira mais um "item" na cobrança, pra entrar no
         // mesmo pagamento (o cliente paga tudo de uma vez só).
@@ -327,7 +360,8 @@ app.post("/api/criar-checkout-infinitepay", async (req, res) => {
                 itens: itensConfiaveis,
                 total: totalReais,
                 frete_servico: frete
-                    ? (frete.nome ? `${frete.servico} - ${frete.nome}` : frete.servico)
+                    ? (frete.nome ? `${frete.servico} - ${frete.nome}` : frete.servico) +
+                      (freteCortesia ? " (cortesia)" : "")
                     : null,
                 frete_valor: frete ? (freteGratis ? 0 : frete.preco) : null,
                 status: "pendente"

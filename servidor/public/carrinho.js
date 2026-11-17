@@ -30,6 +30,7 @@ const OLIVEA_TOKEN_CHAVE = "olivea_token";               // identifica este nave
 const OLIVEA_EXPIRA_CHAVE = "olivea_checkout_expira";    // até quando os itens estão reservados
 const OLIVEA_PEDIDO_CHAVE = "olivea_pedido_pendente";    // pedido que foi pra InfinitePay
 const OLIVEA_AVISO_CHAVE = "olivea_aviso";               // mensagem pra mostrar na sacola
+const OLIVEA_CONVITE_CHAVE = "olivea_convite";           // convite de frete grátis (link secreto)
 
 function oliveaObterSacola() {
     try {
@@ -224,6 +225,41 @@ async function oliveaVerificarPedidoPendente() {
     }
 }
 
+// ---------------------------------------------------------------
+// CONVITE DE FRETE GRÁTIS (link secreto)
+// Quem abre o site por um link com  ?convite=SEGREDO  fica com o
+// convite guardado neste navegador. O servidor é quem confere se
+// o segredo é verdadeiro. Depois de guardar, o "?convite=..." some
+// do endereço pra não ficar aparecendo por aí.
+// ---------------------------------------------------------------
+function oliveaCapturarConvite() {
+    try {
+        const parametros = new URLSearchParams(window.location.search);
+        const convite = parametros.get("convite");
+
+        if (!convite) return;
+
+        localStorage.setItem(OLIVEA_CONVITE_CHAVE, convite.slice(0, 200));
+
+        parametros.delete("convite");
+        const resto = parametros.toString();
+
+        window.history.replaceState(
+            null,
+            "",
+            window.location.pathname + (resto ? "?" + resto : "") + window.location.hash
+        );
+    } catch (erro) { /* ignora */ }
+}
+
+function oliveaObterConvite() {
+    try {
+        return localStorage.getItem(OLIVEA_CONVITE_CHAVE) || "";
+    } catch (erro) {
+        return "";
+    }
+}
+
 function oliveaTotalSacola() {
     return oliveaObterSacola().reduce(
         (total, item) => total + item.preco * item.quantidade,
@@ -270,5 +306,6 @@ function oliveaAtualizarBolinha() {
 document.addEventListener("DOMContentLoaded", oliveaAtualizarBolinha);
 
 // Roda assim que o arquivo carrega (antes das páginas desenharem a sacola)
+oliveaCapturarConvite();
 oliveaVerificarExpiracao();
 oliveaVerificarPedidoPendente();

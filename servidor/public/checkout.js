@@ -66,6 +66,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const MINUTOS_CHECKOUT = 20;
     const token = oliveaToken();
+
+    // Convite de frete grátis (quem entrou pelo link secreto).
+    // O servidor confirma se é verdadeiro; se não for, descarta.
+    const convite = oliveaObterConvite();
+    let conviteValido = false;
+
+    const conviteChecado = (async () => {
+        if (!convite) return;
+
+        try {
+            const resposta = await fetch("/api/convite-valido", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ convite })
+            });
+
+            const dados = await resposta.json();
+            conviteValido = dados.valido === true;
+
+            if (!conviteValido) {
+                localStorage.removeItem(OLIVEA_CONVITE_CHAVE);
+            }
+        } catch (erro) {
+            conviteValido = false;
+        }
+    })();
     let intervaloContador = null;
 
     // Faixa com o contador, no topo da página
@@ -241,6 +267,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Calcula o frete pra sacola inteira, pro CEP informado
     async function calcularFrete(cepLimpo) {
+        await conviteChecado;
+
         freteResultado.innerHTML = '<p class="checkout-frete-aviso">Calculando opções de frete...</p>';
         freteEscolhido = null;
         atualizarResumo();
@@ -262,7 +290,8 @@ document.addEventListener("DOMContentLoaded", () => {
             // Frete grátis a partir de R$ 100 em produtos (sem contar o
             // próprio frete) — o cliente ainda escolhe o TIPO de envio
             // (PAC, SEDEX, Mini Envios), só que o valor cobrado é zero.
-            const freteGratis = oliveaTotalSacola() >= 100;
+            const freteGratisPorValor = oliveaTotalSacola() >= 100;
+            const freteGratis = freteGratisPorValor || conviteValido;
 
             freteResultado.innerHTML = dadosFrete.opcoes.map((opcao, index) => `
                 <label class="frete-opcao" data-index="${index}">
@@ -273,7 +302,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     <span class="preco-servico">${freteGratis ? "GRÁTIS" : "R$ " + opcao.preco.toFixed(2).replace(".", ",")}</span>
                 </label>
             `).join("") + (freteGratis
-                ? '<p class="checkout-frete-aviso" style="margin-top:8px;">🎉 Frete grátis, sua compra passou de R$ 100!</p>'
+                ? '<p class="checkout-frete-aviso" style="margin-top:8px;">' +
+                  (freteGratisPorValor
+                      ? "🎉 Frete grátis, sua compra passou de R$ 100!"
+                      : "🎁 Frete grátis — cortesia Olivea!") +
+                  "</p>"
                 : "");
 
             freteResultado.querySelectorAll(".frete-opcao").forEach((elemento, index) => {
@@ -401,6 +434,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     token,
+                    convite: conviteValido ? convite : undefined,
                     itens: itens.map((i) => ({ id: i.id, quantidade: i.quantidade })),
                     cliente: dadosCliente,
                     frete: freteEscolhido,

@@ -287,13 +287,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
+            // Da mais barata pra mais cara: assim a primeira (já selecionada
+            // e somada no resumo) é sempre a de menor valor.
+            const opcoes = [...dadosFrete.opcoes].sort((a, b) => a.preco - b.preco);
+
             // Frete grátis a partir de R$ 100 em produtos (sem contar o
             // próprio frete) — o cliente ainda escolhe o TIPO de envio
             // (PAC, SEDEX, Mini Envios), só que o valor cobrado é zero.
             const freteGratisPorValor = oliveaTotalSacola() >= 100;
             const freteGratis = freteGratisPorValor || conviteValido;
 
-            freteResultado.innerHTML = dadosFrete.opcoes.map((opcao, index) => `
+            freteResultado.innerHTML = opcoes.map((opcao, index) => `
                 <label class="frete-opcao" data-index="${index}">
                     <input type="radio" name="freteEscolha" style="display:none;">
                     <span class="nome-servico">${opcao.servico}${opcao.nome ? " - " + opcao.nome : ""}
@@ -316,14 +320,14 @@ document.addEventListener("DOMContentLoaded", () => {
                     elemento.querySelector("input").checked = true;
 
                     freteEscolhido = {
-                        ...dadosFrete.opcoes[index],
-                        preco: freteGratis ? 0 : dadosFrete.opcoes[index].preco
+                        ...opcoes[index],
+                        preco: freteGratis ? 0 : opcoes[index].preco
                     };
                     atualizarResumo();
                 });
             });
 
-            // Já seleciona a primeira opção automaticamente
+            // Já seleciona a opção mais barata (a primeira da lista) automaticamente
             freteResultado.querySelector(".frete-opcao")?.click();
 
         } catch (erro) {

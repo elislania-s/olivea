@@ -140,6 +140,9 @@ function oliveaConcluirCompra() {
         localStorage.removeItem(OLIVEA_PEDIDO_CHAVE);
     } catch (erro) { /* ignora */ }
 
+    // O convite de frete grátis vale pra uma compra: terminou, acabou.
+    oliveaDescartarConvite();
+
     oliveaLimparSacola();
 }
 
@@ -217,6 +220,7 @@ async function oliveaVerificarPedidoPendente() {
 
         localStorage.removeItem(OLIVEA_PEDIDO_CHAVE);
         localStorage.removeItem(OLIVEA_EXPIRA_CHAVE);
+        oliveaDescartarConvite();
 
         if (typeof sacolaRenderizar === "function") sacolaRenderizar();
 
@@ -228,15 +232,41 @@ async function oliveaVerificarPedidoPendente() {
 // ---------------------------------------------------------------
 // CONVITE DE FRETE GRÁTIS (link secreto)
 // Quem abre o site por um link com  ?convite=SEGREDO  fica com frete
-// grátis ENQUANTO ESTIVER NAQUELA VISITA. O convite fica guardado só
-// na sessão do navegador: ao fechar a aba/o navegador, ele some, e
-// quem voltar pelo endereço normal do site já encontra o frete normal.
+// grátis ENQUANTO ESTIVER NAQUELA VISITA. O convite acaba quando:
+//   - a compra termina (ele vale pra uma compra);
+//   - a pessoa entra no site "do zero" (digitando o endereço, por
+//     favorito ou vindo de outro site) sem o link do convite;
+//   - a aba/o navegador é fechado.
+// Navegar dentro do site (sacola, checkout, produtos) não tira.
 // O servidor é quem confere se o segredo é verdadeiro.
 // Depois de guardar, o "?convite=..." some do endereço.
 //
 // Pra DESLIGAR o convite na hora (ex.: nos seus testes), abra o site
 // com  ?convite=sair
 // ---------------------------------------------------------------
+// A pessoa chegou agora no site? (digitou o endereço, abriu um favorito
+// ou veio de outro site — inclusive da tela de pagamento). Recarregar a
+// página ou usar "voltar" NÃO conta como entrada nova.
+function oliveaEntradaNova() {
+    try {
+        const navegacao = performance.getEntriesByType("navigation")[0];
+
+        if (navegacao && (navegacao.type === "reload" || navegacao.type === "back_forward")) {
+            return false;
+        }
+    } catch (erro) { /* ignora */ }
+
+    const origem = document.referrer || "";
+
+    if (!origem) return true;
+
+    try {
+        return new URL(origem).origin !== window.location.origin;
+    } catch (erro) {
+        return true;
+    }
+}
+
 function oliveaCapturarConvite() {
     // Limpeza: uma versão anterior guardava o convite de forma permanente
     try {
@@ -247,7 +277,13 @@ function oliveaCapturarConvite() {
         const parametros = new URLSearchParams(window.location.search);
         const convite = parametros.get("convite");
 
-        if (convite === null) return;
+        if (convite === null) {
+            // Sem o link do convite: se foi uma entrada nova no site, o convite acaba
+            if (oliveaEntradaNova()) {
+                sessionStorage.removeItem(OLIVEA_CONVITE_CHAVE);
+            }
+            return;
+        }
 
         if (convite.trim() === "" || convite.trim().toLowerCase() === "sair") {
             sessionStorage.removeItem(OLIVEA_CONVITE_CHAVE);
